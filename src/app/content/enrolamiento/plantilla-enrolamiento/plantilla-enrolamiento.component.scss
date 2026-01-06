@@ -1,0 +1,255 @@
+.credencial-preview {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+}
+
+// ========== ESTILOS PARA CREDENCIAL CON IMAGEN DE FONDO ==========
+.credencial-frente,
+.credencial-reverso {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    }
+}
+
+// Campos editables sobre la imagen
+.campo-credencial {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed transparent;
+    width: 100%;
+    font-weight: bold;
+    font-size: 0.85rem;
+    padding: 2px 4px;
+    margin: 0;
+    transition: all 0.2s;
+    
+    &:hover:not(:disabled), &:focus {
+        border-bottom-color: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.2);
+        outline: none;
+    }
+    
+    &:disabled {
+        opacity: 1;
+        cursor: default;
+    }
+    
+    &::placeholder {
+        color: rgba(255,255,255,0.5);
+        font-style: italic;
+    }
+    
+    &.text-right {
+        text-align: right;
+    }
+    
+    &.text-center {
+        text-align: center;
+    }
+}
+
+// Print mode para credenciales con imagen
+.credencial-frente.print-mode,
+.credencial-reverso.print-mode {
+    box-shadow: none !important;
+    
+    .campo-credencial {
+        border: none !important;
+        background: transparent !important;
+    }
+}
+
+.foto-container, .firma-container {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+.btn-group .btn {
+    transition: all 0.2s ease;
+
+    &.active {
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    &:not(.active):hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+}
+
+.editable-input {
+    background: transparent;
+    border: 1px dashed transparent;
+    width: 100%;
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    padding: 2px 4px;
+    margin: 0;
+    border-radius: 4px;
+    transition: all 0.2s;
+
+    &:hover, &:focus {
+        border-color: #999;
+        background: rgba(255,255,255,0.8);
+        outline: none;
+    }
+    
+    &::placeholder {
+        color: rgba(0,0,0,0.3);
+        font-style: italic;
+    }
+}
+
+.compact-view {
+    .header-section {
+        padding: 5px !important;
+        
+        // Icon container
+        div[style*="width: 80px"] {
+            width: 40px !important;
+            height: 40px !important;
+            margin-bottom: 1px !important;
+            border-width: 1.5px !important;
+            
+            strong { font-size: 0.6rem !important; }
+        }
+        
+        div { font-size: 0.6rem !important; margin-top: 0 !important; }
+        strong { font-size: 0.8rem !important; margin-top: 1px !important; }
+    }
+
+    .body-section {
+        padding: 8px !important;
+        min-height: 0 !important;
+        
+        .row { margin-bottom: 0 !important; }
+
+        // FRENTE
+        .foto-container {
+            width: 90px !important;
+            height: 110px !important;
+        }
+        
+        h5 { 
+            font-size: 0.9rem !important; 
+            margin-bottom: 0 !important;
+            
+            input { font-size: 0.9rem !important; }
+        }
+        
+        .editable-input { 
+            font-size: 0.75rem !important; 
+            height: auto !important; 
+            padding: 0 !important;
+            line-height: 1.1 !important;
+        }
+        
+        // Info box (Frente)
+        .mt-3 { margin-top: 4px !important; padding: 4px !important; }
+        
+        // Firma
+        .firma-container { 
+            height: 40px !important;
+            
+            img {
+                max-height: 35px !important;
+            }
+        }
+        
+        // REVERSO
+        .mb-4 { margin-bottom: 4px !important; }
+        h6 { 
+            margin-bottom: 2px !important; 
+            padding-bottom: 1px !important; 
+            font-size: 0.8rem !important; 
+            border-bottom-width: 1px !important;
+        }
+        .row.mb-2 { margin-bottom: 0 !important; }
+        small { font-size: 0.6rem !important; }
+        
+        // Vigencia Box (Reverso)
+        div[style*="background: rgba(90, 30, 30, 0.05)"] {
+            margin-top: 4px !important;
+            padding: 6px !important;
+            
+            .row { margin-top: 0 !important; }
+            .col-6, .col-12 { padding: 0 4px !important; }
+            
+            input {
+                font-size: 0.7rem !important;
+            }
+
+            small.text-center {
+                margin-top: 2px !important;
+                line-height: 1.1 !important;
+            }
+        }
+        
+        // Fecha expedicion
+        .text-center.mt-4 { margin-top: 4px !important; }
+    }
+}
+
+// Print Mode - Sin restricciones de altura, flujo natural
+.print-mode {
+    box-shadow: none !important;
+    
+    .header-section {
+        padding: 12px !important;
+        
+        div[style*="width: 80px"] {
+            width: 50px !important;
+            height: 50px !important;
+            margin-bottom: 5px !important;
+            
+            strong { font-size: 0.7rem !important; }
+        }
+        
+        div { font-size: 0.7rem !important; }
+        strong { font-size: 0.9rem !important; }
+    }
+
+    .body-section {
+        padding: 15px !important;
+        
+        .foto-container {
+            width: 100px !important;
+            height: 120px !important;
+            border-width: 2px !important;
+        }
+        
+        h5 { font-size: 0.95rem !important; }
+        
+        .editable-input { 
+            font-size: 0.8rem !important;
+            border: none !important;
+            background: transparent !important;
+        }
+        
+        .firma-container {
+            height: 50px !important;
+            border-width: 2px !important;
+            
+            img { max-height: 45px !important; }
+        }
+        
+        // Reverso
+        h6 { font-size: 0.85rem !important; }
+        small { font-size: 0.7rem !important; }
+    }
+}

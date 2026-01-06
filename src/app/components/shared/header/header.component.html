@@ -1,0 +1,48 @@
+<header class="header bg-secondary">
+      <div class="header-content">
+        <!-- Logo o título (lado izquierdo) -->
+        <div class="header-left">
+        <div 
+          class="toolbar-toggle-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="sidebarService.isCollapsed() ? 'Abrir menú' : 'Cerrar menú'">
+          <span class="toggle-icon"> <i class="fas fa-bars"></i> </span>
+        </div>
+        <!-- bton home -->
+         <div 
+          class="toolbar-toggle-btn"
+          (click)="goHome()"
+          >
+          <span class="toggle-icon"> <i class="fas fa-house"></i> </span>
+
+        </div>
+        <div class="text-white">Sistema de Credencialización y Enrolamiento 
+        
+        </div>
+
+    </div>
+        
+        <!-- Elementos del usuario (lado derecho) -->
+        <div class="header-right">
+          <span class="username">{{ usuario?.nombreCompleto || '' }} ( {{ usuario?.nombreRol || '' }} )<i class="fas fa-caret-right mx-1 fa-xs"></i>{{usuario.area || 'Sin área asignada'}}</span>
+          <div class="user-menu" (click)="toggleDropdown()">
+            <!-- Ícono de usuario -->
+            <div class="user-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+            
+            <!-- Dropdown menu -->
+            <div class="dropdown-menu" [class.show]="isDropdownOpen">
+              <button class="dropdown-item" (click)="logout()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>

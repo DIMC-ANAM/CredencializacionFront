@@ -1,0 +1,94 @@
+
+
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  border: none;
+  padding: 0.4rem 0.8rem;
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button.active {
+  background-color: #83002B;
+  color: #fff;
+}
+.pagination span {
+  font-weight: bold;
+  color: #555;
+}
+
+.historial-link:hover{
+  color: cadetblue;
+  text-decoration: dashed;
+}
+
+.log-container {
+  background: #ffffff;
+  color: #717374;
+  padding: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  /* border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3); */
+  font-family: "Segoe UI", sans-serif;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.log-table th, .log-table td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.log-table th {
+  background: rgba(255,255,255,0.05);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.log-table th i {
+  margin-right: 6px;
+  color: #17791f;
+}
+
+.log-table tr:hover {
+  background: rgba(255,255,255,0.08);
+  transition: background 0.2s;
+}
+
+.log-op {
+  background: #728fbe;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}

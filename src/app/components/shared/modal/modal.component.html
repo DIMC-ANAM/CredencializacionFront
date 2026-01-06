@@ -1,0 +1,17 @@
+<div class="modal-header d-flex justify-content-between align-items-center ">
+  <h4 class="modal-title frmlabel p-0 " [innerHTML]="safeTitle" ></h4>
+  <div role="button" aria-label="Close" (click)="onCancel()"> <i class="fas fa-times fa-xl px-2 icon-close"></i></div>
+</div>
+
+<div class="modal-body">
+  <ng-container *ngIf="contentTemplate">
+    <ng-container *ngTemplateOutlet="contentTemplate; context: context"></ng-container>
+  </ng-container>
+</div>
+
+<ng-container *ngIf="showFooter">
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
+    <button class="btn btn-primary" (click)="onAccept()">Aceptar</button>
+  </div>
+</ng-container>

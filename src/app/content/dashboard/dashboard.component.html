@@ -1,0 +1,80 @@
+<div class="container-fluid p-4 d-flex align-items-between justify-content-between flex-column h-100">
+        <div class="mt-2">
+
+        <!-- Main Content -->
+        <main class="d-flex justify-content-start align-items-center flex-row ">
+            <!-- mensaje de bienvenida dentro de una card  -->
+                <div>
+                <img src="img/ICONO CARPETA.svg" alt="" width="80%">
+                </div>
+            <div class="card w-100">
+                <div class="card-body">
+                    <h1 class="card-title frmlabel m-0 p-0">Sistema de Enrolamiento y Credencialización</h1>
+                    <p class="card-text"></p>
+                    <p class="card-text">Aquí podrás realizar enrolamientos e impresiones de credenciales para el personal de la ANAM.</p>
+                    <p class="card-text">Para empezar, haz clic en las opciones a continuación.</p>
+                    <a href="/enrolamiento" class="btn btn-primary mx-2">Enrolar</a>
+        
+                    <a href="/credencializacion" class="btn btn-primary mx-2">Imprimir credenciales</a>                        
+                    
+                </div>
+            </div>
+
+            <!-- Aquí puedes agregar más contenido -->
+
+        </main>
+        </div>
+
+        <!-- Document Consultation -->
+        <div class="mt-4 p-2">
+        <section class="quick-actions">
+            <h3 class="frmlabel text-center">Documentos de Consulta</h3>
+            <div class="documents-grid">
+                <div class="document-card textce"> 
+                    <div class="document-icon manual"> <i class="fas fa-book-open"></i> </div>
+                    <div class="document-info">
+                        <h4>Manual de Usuario del Sistema</h4>
+                        <p>Guía completa para el uso del sistema de movimientos de personal</p>
+                        <div class="document-meta">
+                            <span class="document-version">v1.0</span>
+                            <span class="document-date">Actualizado: 24/10/2025</span>
+                        </div>
+                    </div>
+                    <button class="document-button" (click)="openDocument('manual')">
+                        <i class="fas fa-book-open"></i>  Ver Manual
+                    </button>
+                </div>
+                
+                <div class="document-card textce"> 
+                    <div class="document-icon privacy"><i class="fas fa-lock"></i></div>
+                    <div class="document-info">
+                        <h4>Aviso de Privacidad</h4>
+                        <p>Tratamiento y protección de datos personales conforme a la LFTAIPG</p>
+                        <div class="document-meta">
+                            <span class="document-version">v1.0</span>
+                            <span class="document-date">Actualizado: 24/10/2025</span>
+                        </div>
+                    </div>
+                    <button class="document-button secondary" (click)="openDocument('privacy')">
+                        <i class="fas fa-lock"></i> Ver Aviso
+                    </button>
+                </div>
+                
+                <div class="document-card textce"> 
+                    <div class="document-icon regulation"> <i class="fas fa-balance-scale"></i></div>
+                    <div class="document-info">
+                        <h4>Reglamento Interior de la ANAM</h4>
+                        <p>Normatividad aplicable a la Administración Nacional de Aduanas</p>
+                        <div class="document-meta">
+                            <!-- <span class="document-version"></span> -->
+                            <span class="document-date">Actualizado: 21/12/2021</span>
+                        </div>
+                    </div>
+                    <button class="document-button tertiary" (click)="openDocument('regulation')">
+                        <i class="fas fa-clipboard-list"></i> Ver Reglamento
+                    </button>
+                </div>
+            </div>
+        </section>
+        </div>
+</div>

@@ -1,0 +1,1035 @@
+
+@import 'bootstrap/dist/css/bootstrap.min.css';
+/* ========================================
+           SISTEMA DE DISEÑO - HOJA DE ESTILO BASE
+           ======================================== */
+
+        /* ========================================
+           1. VARIABLES CSS (Custom Properties)
+           ======================================== */
+
+           /* Para la variante Regular de Patria */
+@font-face {
+  font-family: 'Patria';
+  /* Prueba con la ruta absoluta desde la raíz de tu servidor (o assets) */
+  src: url('/fonts/Patria_Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Y para la bold */
+@font-face {
+  font-family: 'Patria';
+  src: url('/fonts/Patria_Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+ /* Colores principales */
+    --color-primary: #9F2241;
+    --color-secondary: #691C32;
+    --color-success: #007B5D;
+    --color-gold: #C9A977;
+    --color-error: #9F0D3D;
+
+    /* Colores de apoyo */
+    --color-dark-gray: #6F7271;
+    --color-not-selected: #3d3f3e7e;
+    --color-light-gray: #98989A;
+    --color-light-bg: #ffffff;
+    --color-deep-blue: #0D324D;
+    --color-purple: #A188A6;
+    --color-light-blue: #C9DAEA;
+
+    /* Colores tipográficos específicos */
+    --color-title-primary: #424242;
+    --color-title-secondary: #757575;
+    --color-text-base: #212121;
+
+
+    /* Variables derivadas para consistencia */
+    --color-primary-hover: #7A1B34;
+    --color-primary-light: rgba(159, 34, 65, 0.1);
+    --color-secondary-hover: #4F1525;
+    --color-success-hover: #005A45;
+    --color-error-hover: #7A0A2F;
+
+    /* Colores para botones */
+    --btn-primary-hover: var(--color-secondary);
+    --btn-secondary-hover: var(--color-light-bg);
+    --btn-disabled-bg: #E0E0E0;
+    --btn-disabled-text: #BDBDBD;
+
+    /* Colores para inputs */
+    --input-border-default: #C4C4C4;
+    --input-border-focus: var(--color-success);
+    --input-border-error: var(--color-error);
+
+    /* Colores de texto */
+    --text-primary: var(--color-text-base);
+    --text-secondary: var(--color-dark-gray);
+    --text-light: var(--color-light-gray);
+    --text-on-primary: #FFFFFF;
+    --text-on-dark: #FFFFFF;
+    --text-title-h1: var(--color-title-primary);
+    --text-title-h2: var(--color-title-secondary);
+    --text-auxiliary: var(--color-light-gray);
+
+    /* Tipografía */
+    --font-family-titles: 'Patria', serif;
+    --font-family-text: 'Noto Sans', sans-serif;
+
+    /* Tamaños de fuente */
+    --font-size-h1: 32px;
+    --font-size-h2: 24px;
+    --font-size-h3: 20px;
+    --font-size-base: 16px;
+    --font-size-button: 14px;
+    --font-size-auxiliary: 12px;
+
+    /* Pesos de fuente */
+    --font-weight-bold: 700;
+    --font-weight-medium: 500;
+    --font-weight-regular: 400;
+    --font-weight-light: 300;
+
+    /* Colores de fondo */
+    --bg-primary: var(--color-light-bg);
+    --bg-white: #FFFFFF;
+    --bg-overlay: rgba(13, 50, 77, 0.5);
+}
+
+/* ========================================
+    2. RESET Y CONFIGURACIÓN BASE
+    ======================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    
+}
+
+html {
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+    
+}
+
+body {
+    font-family: var(--font-family-text);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    /* line-height: 1.6; */
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+
+.w-10  { width: 10%; }
+.w-20  { width: 20%; }
+.w-30  { width: 30%; }
+.w-40  { width: 40%; }
+.w-50  { width: 50%; }
+.w-60  { width: 60%; }
+.w-70  { width: 70%; }
+.w-80  { width: 80%; }
+.w-90  { width: 90%; }
+.w-100 { width: 100%; }
+
+
+.hp-100  { height: 100px !important;}
+.hp-200  { height: 200px !important;}
+.hp-300  { height: 300px !important;}
+.hp-400  { height: 400px !important;}
+.hp-500  { height: 500px !important;}
+.hp-600  { height: 600px !important;}
+.hp-700  { height: 700px !important;}
+.hp-800  { height: 800px !important;}
+.hp-900  { height: 900px !important;}
+
+
+/* ===== Centrado horizontal ===== */
+.text-center { text-align: center !important; }
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+}
+
+/* ===== Centrado con Flexbox ===== */
+.flex-center {
+  display: flex !important;
+  justify-content: center !important; /* horizontal */
+  align-items: center !important;    /* vertical */
+}
+
+.flex-v-center {
+  display: flex !important;
+  align-items: center !important; /* solo vertical */
+}
+
+.flex-h-center {
+  display: flex !important;
+  justify-content: center !important; /* solo horizontal */
+}
+
+/* ===== Centrado absoluto ===== */
+.absolute-center {
+  position: absolute !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== Centrado con grid ===== */
+.grid-center {
+  display: grid !important;
+  place-items: center !important;
+}
+
+/* ========================================
+    3. CLASES UTILITARIAS DE COLOR
+    ======================================== */
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-error { color: var(--color-error) !important; }
+.text-gold { color: var(--color-gold) !important; }
+.text-dark-gray { color: var(--color-dark-gray) !important; }
+.text-light-gray { color: var(--color-light-gray) !important; }
+.text-deep-blue { color: var(--color-deep-blue) !important; }
+.text-purple { color: var(--color-purple) !important; }
+
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-success { background-color: var(--color-success) !important; }
+.bg-error { background-color: var(--color-error) !important; }
+.bg-gold { background-color: var(--color-gold) !important; }
+.bg-light { background-color: var(--bg-primary) !important; }
+.bg-white { background-color: var(--bg-white) !important; }
+.bg-gray { background-color: #b6b2b217 !important; }
+.bg-dark-gray { background-color: var(--color-not-selected) !important; }
+.bg-deep-blue { background-color: var(--color-deep-blue) !important; }
+.bg-purple { background-color: var(--color-purple) !important; }
+.bg-light-blue { background-color: var(--color-light-blue) !important; }
+
+
+/* borders */
+.border-rounded{
+    border-radius: 24px;
+
+}
+/* ========================================
+    4. TIPOGRAFÍA
+    ======================================== */
+/* Títulos */
+
+
+h1, .h1 {
+    font-family: var(--font-family-titles);
+    font-size: var(--font-size-h1);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-title-h1);
+    line-height: 1.2;
+    margin-bottom: 1rem;     
+    /* BORDE INFERIOR CON LINEA COLOR GOLD*/
+    padding-bottom: 0.5rem;
+    
+    padding-left: 10px;
+}
+
+.tituloBorderLeft{
+    /* border-bottom: 3px solid var(--color-gold); */
+    border-left: solid 4px #BC955C;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-dark-gray);
+
+}
+
+h2, .h2 {
+    font-family: var(--font-family-titles);
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-light);
+    color: var(--text-title-h2);
+    line-height: 1.3;
+    margin-bottom: 0.75rem;    
+}
+
+h3, .h3 {
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+/* Texto base */
+p, .text-base {
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* Texto de botones */
+.btn-text {
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-button);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.4;
+}
+
+/* Texto auxiliar */
+.text-auxiliary, small {
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-auxiliary);
+    font-weight: var(--font-weight-regular);
+    color: var(--text-auxiliary);
+    line-height: 1.5;
+}
+
+/* Clases utilitarias tipográficas */
+.font-bold { font-weight: var(--font-weight-bold) !important; }
+.font-medium { font-weight: var(--font-weight-medium) !important; }
+.font-regular { font-weight: var(--font-weight-regular) !important; }
+.font-light { font-weight: var(--font-weight-light) !important; }
+
+/* clases para los diferentes tamaños de fuentes */
+.text-size-large { 
+    font-size: 32px; /* Ajusta según sea necesario */
+}
+.text-size-medium { 
+    font-size: 30px; /* Ajusta según sea necesario */
+}
+.text-size-small { 
+    font-size: 24px; /* Ajusta según sea necesario */   
+}
+
+
+.text-h1 { 
+    font-size: var(--font-size-h1) !important;
+    font-family: var(--font-family-titles) !important;
+    
+}
+.text-h2 { 
+    font-size: var(--font-size-h2) !important;
+    font-family: var(--font-family-titles) !important;
+    border-bottom: 2px solid var(--color-gold);
+}
+.text-h3 { font-size: var(--font-size-h3) !important; }
+.text-base { font-size: var(--font-size-base) !important; }
+.text-button { font-size: var(--font-size-button) !important; }
+.text-small { font-size: var(--font-size-auxiliary) !important; }
+
+/* ========================================
+    5. BOTONES
+    ======================================== */
+/* Estilos base para todos los botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 5px;
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-button);
+    font-weight: var(--font-weight-bold);
+    text-align: center;
+    text-decoration: none;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    outline: none;
+    min-height: 44px;
+    min-width: 80px;
+}
+
+.btn-rounded{
+    border-radius: 35px;
+    padding: 10px;
+}
+
+
+
+.btn:focus {
+    box-shadow: 0 0 0 3px transparent;
+}
+
+
+
+/* Botón Primario */
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--text-on-primary);
+    border-color: var(--color-primary);
+}
+.btn-primary:focus, 
+.btn-primary.focus {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  box-shadow: 0 0 0 3px rgba(159, 34, 65, 0.3); // o el que prefieras
+  outline: none !important;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--btn-primary-hover);
+    border-color: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Botón Secundario */
+.btn-secondary {
+    background-color: var(--bg-white);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--btn-secondary-hover);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-secondary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Botón Disabled */
+.btn:disabled,
+.btn-disabled {
+    background-color: var(--btn-disabled-bg) !important;
+    color: var(--btn-disabled-text) !important;
+    border-color: var(--btn-disabled-bg) !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Variantes de tamaño (opcional para flexibilidad futura) */
+.btn-sm {
+    padding: 3px 12px;
+    min-height: 32px;
+    min-width: 60px;
+    font-size: 12px;
+}
+
+.btn-lg {
+    padding: 8px 24px;
+    min-height: 52px;
+    min-width: 120px;
+    font-size: 16px;
+}
+
+/* ========================================
+    6. INPUTS Y FORMULARIOS
+    ======================================== */
+/* Mensajes de error */
+.invalid-field {
+    color: var(--input-border-error);
+    font-size: var(--font-size-auxiliary);
+    font-weight: var(--font-weight-regular);
+    margin-top: 4px;
+    display: block;
+    margin-bottom: -10px;
+    padding-left: 5px;
+}
+
+
+
+
+.hover-line-center {
+    position: relative;
+    display: inline-block;
+}
+
+.hover-line-center::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 4px;
+    background-color: var(--color-gold);
+    transition: all 0.2s ease;
+    transform: translateX(-50%);
+}
+
+.hover-line-center:hover::after {
+    width: 100%;
+}
+
+/* Línea que aparece de izquierda a derecha */
+.hover-line-left {
+    position: relative;
+    display: inline-block;
+}
+
+.hover-line-left::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 4px;
+    background-color: var(--color-gold);
+    transition: width 0.3s ease;
+}
+
+.hover-line-left:hover::after {
+    width: 100%;
+}
+
+/* Línea que aparece de derecha a izquierda */
+.hover-line-right {
+    position: relative;
+    display: inline-block;
+}
+
+.hover-line-right::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 4px;
+    background-color: var(--color-gold);
+    transition: width 0.2s ease;
+}
+
+.hover-line-right:hover::after {
+    width: 100%;
+}
+
+
+
+.icon-bg-base-round {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s ease-in;
+  font-size: 0.9rem;
+  width: 32px;            /* ancho fijo */
+  height: 32px;           /* alto fijo */
+}
+
+.icon-bg-alert-round {
+  background-color: rgba(238, 195, 195, 0.7);
+  border-radius: 50%;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s ease-in;
+  font-size: 0.9rem;
+  width: 32px;            /* ancho fijo */
+  height: 32px;           /* alto fijo */
+}
+.icon-bg-base-round:hover {
+    background-color: rgba(224, 224, 224, 0.45); /* color al hacer hover */
+    padding: 6px;
+}
+.centrado{
+    justify-self: anchor-center;
+}
+
+.frmlabel {
+    padding-top: 20px;
+    font-weight: bolder;
+    color: var(--color-dark-gray);
+}
+
+input.form-control,
+select.form-control {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    box-shadow: 0 0 8px -3px gray;
+    border-radius: 10px;
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    color: var(--text-primary);
+    /* height: 40px!important; */
+    /*  */
+    transition: all 0.1s ease-in-out;
+    appearance: auto;
+
+    &:focus {
+        outline: none;
+        border: none;
+        box-shadow: 0 0 10px 1px rgb(107, 105, 105);
+
+    }
+
+    &.valid {
+        box-shadow: 0 0 5px 1px #08741a;
+    }
+
+    &.invalid {
+        border: #b31c1c;
+        box-shadow: 0 0 5px 1px #b31c1c95;
+
+    }
+
+    // Si está enfocado Y es inválido, gana el rojo
+    &.invalid:focus {
+        border-color: #e50d0d;
+        box-shadow: 0 0 10px 1px rgb(191, 93, 93);
+        background-color: rgba(210, 146, 146, 0.104);
+    }
+
+    // Si está enfocado Y es válido, gana el verde oscuro
+    &.valid:focus {
+        background-color: #4ea18927;
+        box-shadow: 0 0 10px 1px rgb(46, 125, 78);
+    }
+}
+textarea.form-control{
+    width: 100%;
+    height: 150px!important;
+}
+input[type="checkbox"].form-check-input {
+    box-shadow: gray 0 0 4px 1px;
+    border: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+   /*  border: solid 1px var(--color-gold);*/
+    
+    display: inline;
+    &:checked {
+        background-color: var(--color-success);
+        border-color: var(--color-success);
+    }
+}
+
+.input-icon-wrapper {
+    position: relative;
+
+    input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .icon {
+        position: absolute;
+        top: 0%;
+        left:96%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+        transition: color 0.1s ease-in-out;
+
+        &.valid-icon {
+            color: #08741a; // Verde    
+        }
+
+        &.invalid-icon {
+            color: #a33635; // Verde    
+        }
+
+    }
+
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        color: #aaa;
+        pointer-events: none;
+    }
+
+    .initial {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+        color: #aaa;
+        pointer-events: none;
+    }
+
+    .icon-left {
+        padding-left: 50px;
+    }
+}
+
+.filename {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+
+.tagged-text {
+    width: fit-content;
+    color: white;
+    font-weight: 400;
+    font-size: small;
+    padding: 0 2px 0 2px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0;
+    vertical-align: middle;
+
+    &-1 {
+        background-color: var(--color-primary);
+    }
+
+    &-2 {
+        background-color: var(--color-gold);
+    }
+
+    &-3 {
+        background-color: var(--color-title-secondary);
+    }
+
+    &-4 {
+        background-color: var(--color-deep-blue);
+    }
+
+    &-5 {
+        background-color: var(--color-purple);
+    }
+}
+
+.tagged-text-usuarios-status {
+    width: fit-content;
+    color: white;
+    font-weight: 600;
+    font-size: x-small;
+    padding: 1% 6px 1% 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0;
+    vertical-align: middle;
+
+    &-1 {
+        background-color: var(--color-success);
+    }
+
+    &-2 {
+        background-color: var(--color-dark-gray);
+    }
+
+}
+.tool-icon {
+    font-size: 14px;
+    color: var(--color-deep-blue);
+    background-color: rgba(196, 196, 196, 0.557);
+    border-radius: 50%;
+    padding: 4px;
+    margin: 4px;
+
+    &:hover {
+        scale: 1.02;
+        transform: translateY(-2px);
+    }
+
+    cursor: pointer;
+}
+
+
+.required::before {
+    content: '*';
+    font-size: small;
+    color: var(--color-primary);
+    padding: 2px;
+}
+
+
+// Estilos globales para tamaños personalizados
+.modal-width-mediano .modal-dialog {
+    width: 45%;
+    max-width: none;
+}
+.modal-width-400px .modal-dialog {
+    width: 70%;
+    max-width: none;
+}
+
+.modal-height-80vh .modal-dialog {
+    height: 500px;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-height-80vh .modal-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-height-80vh {
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.tooltip-wrapper {
+    display: inline-block;
+    position: relative;
+    
+}
+
+.tooltip-wrapper::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.2s ease-in-out;
+    z-index: 10000;
+}
+.tooltip-wrapper.left::after {
+  left: 0;
+  transform: translateX(-100%) translateY(-8px);
+}
+.tooltip-wrapper.center::after {
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+}
+.tooltip-wrapper.end::after {
+  left: 150%;
+  transform: translateX(0) translateY(-8px);
+}
+.tooltip-wrapper.up::after {
+  bottom: 100%;
+  transform: translateX(-50%) translateY(-20%);
+}
+.tooltip-wrapper.down::after {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+}
+
+
+.tooltip-wrapper:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+/* Scrollbar vertical */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Scrollbar horizontal */
+::-webkit-scrollbar:horizontal {
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0c520f21;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b2beba;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b2beba;
+}
+
+/* Track horizontal */
+::-webkit-scrollbar-track:horizontal {
+  background: #0c520f21;
+  border-radius: 10px;
+}
+
+/* Thumb horizontal */
+::-webkit-scrollbar-thumb:horizontal {
+  background: #b2beba;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background: #b2beba;
+}
+
+/* Oculta el icono "eye" nativo de Edge */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+
+
+
+
+/*animaciones */
+@keyframes destello {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px var(--destello-color));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 4px var(--destello-color));
+    transform: scale(1.3);
+  }
+}
+
+.destello {
+  animation: destello 1s infinite ease-in-out;
+}
+
+
+/* Contenedor de botones */
+.dt-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Estilo base para botones */
+.dt-button {
+  background-color: var(--color-success); /* azul bootstrap */
+  border: none;
+  color: white;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover */
+.dt-button:hover {
+  background-color: #0b5ed7;
+  color: white;
+}
+
+/* Quitar borde focus por defecto, y agregar otro más suave */
+.dt-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+}
+
+
+/* CSS principal para la tabla */
+.table-border-colapse {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100% !important; /* Fuerza el ancho completo */
+    
+    thead td,
+    thead th {
+        border: none;
+        color: var(--color-success-hover);
+        font-weight: 600;
+        font-size: small;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    tbody tr:hover {
+        background-color: #aaaaaa1d;
+    }
+
+    tbody td {
+        border: 1px solid #ccc;
+        padding: 2px 5px 3px 5px;
+        word-wrap: break-word; /* Manejo de texto largo */
+        /* overflow: hidden; */
+    }
+}
+
+.pagination {
+  /* Espaciado, fondo, border-radius, etc. */
+  padding: 2px;
+}
+
+.page-item.active .page-link {
+  background-color: var(--color-primary);
+  color: #fff;
+
+}
+
+.page-item .page-link {
+  color: var(--color-primary);
+  border: 1px solid #dee2e6;
+  transition: background 0.2s;
+}
+
+.page-item .page-link:hover {
+  background: #f5f5f5;
+  color: var(--color-deep-blue);
+
+}
+
+.page-item.disabled .page-link {
+  color: #ccc;
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  cursor: not-allowed;
+      &:focus{
+	outline: none;
+  }
+}
+
+.pagination .fa-caret-left,
+.pagination .fa-caret-right {
+  color: var(--color-primary);
+  font-size: 1.2em;
+  transition: color 0.2s;
+}
+
+.page-item.disabled .fa-caret-left,
+.page-item.disabled .fa-caret-right {
+  color: #ccc;
+}
+
+.page-link:hover .fa-caret-left,
+.page-link:hover .fa-caret-right {
+  color: var(--color-deep-blue);
+}
+// Quitar outline azul de los botones de paginación
+.pagination .page-link:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}

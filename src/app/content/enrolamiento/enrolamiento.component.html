@@ -1,0 +1,39 @@
+<div class="container-fluid p-4">
+
+    <header class="bg-light border-bottom mb-4">
+        <div class="container py-4 px-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2 bg-primary rounded">
+                        <i class="fas fa-user-plus text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h1 class="fw-bold text-dark mb-1">Enrolamiento</h1>
+                        <p class="text-muted mb-0">Busque un empleado para realizar su enrolamiento</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-muted small">
+                    <i class="bi bi-calendar"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="row">
+        <!-- Panel izquierdo: Búsqueda y DataTable -->
+        <div class="col-lg-5 mb-4">
+            <app-consulta-enrolamiento 
+                (empleadoEncontrado)="recibirEmpleado($event)">
+            </app-consulta-enrolamiento>
+        </div>
+
+        <!-- Panel derecho: Plantilla de credencial -->
+        <div class="col-lg-7">
+            <app-plantilla-enrolamiento 
+                [empleado]="empleadoSeleccionado"
+                [editable]="true"
+                (enrolamientoCompletado)="onEnrolamientoCompletado()">
+            </app-plantilla-enrolamiento>
+        </div>
+    </div>
+</div>

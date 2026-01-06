@@ -1,0 +1,19 @@
+.modal-dialog {
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-header .btn-close:focus {
+  outline: none;
+  box-shadow: none;
+  
+}
+
+.icon-close:hover{
+	color: #e70909;
+}
+
+.modal-body{
+  padding:10px;
+}

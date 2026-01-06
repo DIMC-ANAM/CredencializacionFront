@@ -1,0 +1,176 @@
+<div class="container p-4 h-100 d-flex flex-column animate__animated animate__fadeIn">
+    
+    <header class="bg-white border-bottom mb-4 rounded shadow-sm">
+        <div class="container py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2 bg-primary bg-opacity-10 rounded">
+                        <i class="fas fa-search text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h1 class="fw-bold text-dark mb-1 h4">Búsqueda Avanzada</h1>
+                        <p class="text-muted mb-0 small">Consulta histórica y detallada de turnados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body bg-white rounded-2 p-4">
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h6>
+            <form class="row gx-3 align-items-end">
+                <div class="col-12 col-md-3 mb-3">
+                    <label class="form-label small fw-bold text-secondary">Fecha Inicio</label>
+                    <input type="date" class="form-control" [(ngModel)]="startDate" name="startDate">
+                </div>
+                <div class="col-12 col-md-3 mb-3">
+                    <label class="form-label small fw-bold text-secondary">Fecha Fin</label>
+                    <input type="date" class="form-control" [(ngModel)]="endDate" name="endDate">
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label class="form-label small fw-bold text-secondary">Folio asunto</label>
+                    <input type="text" class="form-control" [(ngModel)]="folio" name="folio" placeholder="Ej. SCG-ANAM-0001" (keyup.enter)="applyFilter()">
+                </div>
+                <div class="col-12 col-md-2 mb-3 d-flex gap-2">
+                    <button type="button" class="btn btn-primary w-100" (click)="applyFilter()" [disabled]="isLoading">
+                        <i class="fas fa-search me-1"></i> Buscar
+                    </button>
+                    <button type="button" class="btn btn-light border" (click)="clearFilter()" title="Limpiar filtros">
+                        <i class="fas fa-eraser text-muted"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+        <div class="card shadow-sm border-0 flex-grow-1 position-relative">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0 text-dark fw-bold">
+                <i class="fas fa-table me-2 text-primary"></i>Resultados
+            </h5>
+                <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" (click)="refreshGrid()" title="Restablecer tabla">
+                    <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isRefreshing"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" 
+                        (click)="toggleColumnPanel()" 
+                        [class.active]="showColumnPanel">
+                    <i class="fas fa-columns me-1"></i> Columnas
+                </button>
+                  <!--Descargar excel-->
+                <button class="btn btn-sm btn-outline-secondary" style="background-color: #217346; color: white;" 
+                        (click)="generarExcel()">
+                    <i class="fa-regular fa-file-excel me-1"></i> Excel
+                </button>
+                    
+                </div>  
+        </div>        
+
+        <div class="card-body p-0 position-relative h-100 overflow-hidden" style="min-height: 500px;">
+            
+            <div class="h-100 w-100">
+                <ag-grid-angular
+                    style="width: 100%; height: 100%;" 
+                    class="ag-theme-alpine custom-grid"
+                    [rowData]="rowData"
+                    [columnDefs]="columnDefs"
+                    [defaultColDef]="defaultColDef"
+                    [pagination]="true"
+                    [paginationPageSize]="paginationPageSize"
+                    [paginationPageSizeSelector]="paginationPageSizeSelector"
+                    [animateRows]="true"
+                    [enableRangeSelection]="true"
+                    [enableBrowserTooltips]="true"
+                    (gridReady)="onGridReady($event)"
+                    (cellClicked)="onCellClicked($event)">
+                </ag-grid-angular>
+            </div>
+
+            <div class="column-panel bg-white border-start shadow" 
+                 [class.show]="showColumnPanel">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                    <h6 class="m-0 fw-bold text-dark">Mostrar Columnas</h6>
+                    <button type="button" class="btn-close btn-sm" (click)="closeColumnPanel()"></button>
+                </div>
+                
+                <div class="p-2 overflow-auto" style="height: calc(100% - 53px);">
+                    <div *ngFor="let col of columnDefs" class="mb-1 px-2"> 
+                        <div class="form-check form-switch py-2" *ngIf="col.field !== 'actions' && col.field !== 'asuntoFolio' && col.field !== 'statusTurnado'">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   role="switch"
+                                   [id]="'col-' + col.field"
+                                   [checked]="isColumnVisible(col.field!)"
+                                   (change)="toggleColumn(col.field!)"
+                                   style="cursor: pointer;">
+                            <label class="form-check-label small text-truncate d-block ps-2" 
+                                   [for]="'col-' + col.field"
+                                   [title]="col.headerName"
+                                   style="cursor: pointer; user-select: none;">
+                                {{ col.headerName }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="card-footer bg-light py-2 border-top" *ngIf="paginacion">
+            <small class="text-muted">
+                Mostrando {{ rowData.length }} registros de un total de {{ paginacion.totalRegistros }}.
+            </small>
+        </div>
+    </div>
+</div>
+<ng-template #verDocumentoModal let-aceptar="aceptar" let-cancelar="cancelar">
+    <div class="visor d-flex flex-row">
+        <!-- Sidebar lista de documentos -->
+        <div class="document-list bg-light border-end d-flex flex-column" style="width: 280px; min-width: 280px;">
+            <div class="p-3 border-bottom bg-white">
+                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-folder-open me-2"></i>Expediente del asunto</h6>
+                <small class="text-muted">{{ currentAsuntoFolio }}</small>
+            </div>
+            <div class="flex-grow-1 overflow-auto p-2">
+                <ng-container *ngFor="let key of documentGroupKeys">
+                    <div *ngIf="documentosAgrupados[key] && documentosAgrupados[key].length > 0" class="group-section mb-2">
+                        <div class="d-flex justify-content-between align-items-center px-2 py-1">
+                            <strong class="small text-muted">{{ keyLabel(key) }}</strong>
+                            <span class="badge bg-secondary small">{{ documentosAgrupados[key].length }}</span>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <button type="button" 
+                                    class="list-group-item list-group-item-action border-0 rounded mb-1 d-flex align-items-center"
+                                    *ngFor="let doc of documentosAgrupados[key]" 
+                                    (click)="cargarDocumentoEnVisor(doc)"
+                                    [class.active]="doc === documentoActual">
+                                <i class="fas me-2" [ngClass]="doc.nombre.endsWith('.pdf') ? 'fa-file-pdf' : (doc.nombre.endsWith('.jpg') || doc.nombre.endsWith('.png') ? 'fa-file-image' : 'fa-file')"></i>
+                                <div class="text-truncate" [title]="doc.nombre">{{ doc.nombre }}</div>
+                                <small class="text-muted ms-auto">{{ humanFileSize(doc.size) }}</small>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+
+        <!-- Visor -->
+        <div class="pdf-container flex-grow-1 position-relative">
+            <div class="pdf-header p-2">
+                <p class="pdf-title"><i class="fa-solid fa-file-alt m-2"></i> {{documentoVisor?.nombre || 'Cargando...'}}</p>
+            </div>
+
+            <!-- Aquí va el PDF embebido -->
+            <embed [src]="documentVisorURL" type="application/pdf" class="pdf-viewer" id="pdfViewer"
+                *ngIf="documentVisorURL" />
+
+            <div class="pdf-info" *ngIf="documentoVisor">
+                <strong>Archivo:</strong> {{documentoVisor.nombre}} |
+                <strong>Tamaño:</strong> {{documentoVisor.size |  sizeFormat }} |
+                <!-- <strong>Tipo: </strong>{{documentoVisor.type || null }} -->
+            </div>
+        </div>
+    </div>
+</ng-template>

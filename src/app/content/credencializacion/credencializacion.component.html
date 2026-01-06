@@ -1,0 +1,148 @@
+<div class="container-fluid p-4">
+
+	<header class="bg-light border-bottom">
+		<div class="container py-4 px-3">
+			<div class="d-flex justify-content-between align-items-center">
+				<div class="d-flex align-items-center gap-3">
+					<div class="p-2 bg-primary rounded">
+						<i class="fas fa-id-card text-white fs-4"></i>
+					</div>
+					<div class="text-left">
+						<h1 class="fw-bold text-dark mb-1 px-0">Credencialización</h1>
+						<p class="text-muted mb-0">Impresión de credenciales</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<div class="container-fluid mt-4 p-3 bg-gray rounded-3 border-4 ">
+		
+		<div class="d-flex justify-content-between align-items-center w-100 mb-3">
+			<div class="w-90">
+			<input type="text" placeholder="Buscar por cualquier campo" [(ngModel)]="searchTerm"
+					(input)="applyFilter()" class="form-control" />
+			</div>
+			<div class="w-10 text-center">
+				<i role="button" class="fas fa-sync-alt text-success" (click)="obtenerCredenciales()"></i>
+			</div>
+
+		</div>
+		
+		<div class="col-md-12 right align-items-right">
+
+			<table class="w-100 table-responsive  table-border-colapse ">
+				<thead>
+					<tr>
+						<td> Num Empleado </td>
+						<td> RFC </td>
+						<td> CURP </td>
+						<td> Nombres </td>
+						<td> Adscripción </td>
+						<td> Puesto </td>
+						<td> Acciones </td>
+					</tr>
+				</thead>
+				<tbody *ngIf="paginaPersonal.length > 0; else noData">
+
+					<tr *ngFor="let persona of paginaPersonal">
+						<td>
+                            <span *ngIf="persona.num_empleado">{{ persona.num_empleado }}</span>
+                            <span *ngIf="!persona.num_empleado" class="text-danger small">Sin número de empleado</span>
+                        </td>
+						<td>{{ persona.rfc }}</td>
+						<td>{{ persona.curp }}</td>
+						<td>{{ persona.nombre }} {{ persona.paterno }} {{ persona.materno }}</td>
+						<td>{{ persona.adscripcion }}</td>
+						<td>{{ persona.puesto }}</td>
+						<td class="text-center">
+                            <!-- Visualizar -->
+							<span class="tooltip-wrapper" [attr.data-tooltip]="'Visualizar Credencial'"> 
+                                <i class="tool-icon fas fa-eye me-3" role="button" (click)="visualizarCredencial(persona)"></i>
+                            </span>
+
+                            <!-- Imprimir -->
+                            <span class="tooltip-wrapper" [attr.data-tooltip]="'Imprimir'"> 
+                                <i class="tool-icon fas fa-print" role="button" (click)="imprimirCredencial(persona)"></i>
+                            </span>
+						</td>
+					</tr>
+
+				</tbody>
+
+				<ng-template #noData>
+					<tbody>
+						<tr>
+							<td colspan="7" class="text-center py-4 text-muted">
+								<i class="fas fa-info-circle me-2"></i>
+								No hay registros disponibles.
+							</td>
+						</tr>
+					</tbody>
+				</ng-template>
+			</table>
+
+			<div class="text-end my-2" *ngIf="personal.length > 0">
+				Mostrando del
+				<strong>{{ currentPage * pageSize + 1 }} </strong>
+				al
+				<strong>{{ Math.min((currentPage + 1) * pageSize, filteredPersonal.length) }} </strong>
+				de <strong>{{ filteredPersonal.length }}</strong> registros
+			</div>
+			<div class="pagination">
+				<button (click)="prevPage()" [disabled]="currentPage === 0"> <i class="fas fa-caret-left"></i></button>
+
+				<ng-container *ngIf="visiblePages[0] > 0">
+					<span>...</span>
+				</ng-container>
+
+				<ng-container *ngFor="let page of visiblePages">
+					<button (click)="goToPage(page)" [class.active]="page === currentPage">
+						{{ page + 1 }}
+					</button>
+				</ng-container>
+
+				<ng-container *ngIf="visiblePages[visiblePages.length - 1] < totalPages - 1">
+					<span>...</span>
+				</ng-container>
+
+				<button (click)="nextPage()" [disabled]="currentPage === totalPages - 1"><i class="fas fa-caret-right"></i></button>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+
+<ng-template #modalVisualizar>
+    <div class="modal-body" *ngIf="empleadoSeleccionado">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" [(ngModel)]="esEditable">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Editar</label>
+            </div>
+            <button class="btn btn-primary" (click)="guardarCambios(plantilla)" [disabled]="!esEditable">
+                <i class="fas fa-save mr-1"></i> Guardar
+            </button>
+        </div>
+        
+        <app-plantilla-enrolamiento 
+            #plantilla
+            [empleado]="empleadoSeleccionado" 
+            [editable]="esEditable"
+            (enrolamientoCompletado)="onEnrolamientoCompletado()">
+        </app-plantilla-enrolamiento>
+    </div>
+</ng-template>
+
+<!-- Contenedor oculto para impresión -->
+<div style="position: absolute; left: -9999px; top: -9999px;">
+    <div #printContainer style="width: 550px;">
+        <app-plantilla-enrolamiento 
+            #plantillaImprimir
+            [empleado]="empleadoImprimir" 
+            [editable]="false"
+            [isPrintMode]="true">
+        </app-plantilla-enrolamiento>
+    </div>
+</div>

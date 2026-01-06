@@ -1,0 +1,28 @@
+<div class="sidebar-container">
+			<!-- Sidebar -->
+				<nav class="sidebar " [class.collapsed]="sidebarService.isCollapsed()"
+			 [class.mobile-visible]="sidebarService.isMobile() && sidebarService.isExpanded()">
+
+				<!-- Menú de navegación -->
+				<ul class="sidebar-menu">
+					<li class="menu-item" *ngFor="let item of menuUsuario">
+						<a href="#" class="menu-link hover-line-left" (click)="selectItem(item, $event)">
+							<span class="{{item.icon}}" [innerHTML]=""></span>
+							<span class="menu-text" *ngIf="sidebarService.isExpanded()">{{ item.label }}</span>
+						</a>
+					</li>
+				</ul>
+				<div class="d-block" [ngClass]="{'d-none': sidebarService.isCollapsed()}">
+					<!-- <div  style= " position: absolute; width: 90vh; height: 70vh; background-color: #43020244; border-radius: 50%; left: -30%; z-index: -1;"></div> -->
+					<img src="/img/anam.png" alt="" width="180" height="120" class="mx-auto d-block  my-5 ">
+				</div>
+			</nav>
+
+
+			<!-- Overlay para mobile -->
+			<div 
+				class="sidebar-overlay" 
+				*ngIf="sidebarService.isExpanded() && sidebarService.isMobile()"
+				(click)="onOverlayClick()">
+			</div>
+</div>

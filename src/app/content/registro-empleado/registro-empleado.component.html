@@ -1,0 +1,139 @@
+<div class="container-fluid w-90">
+    <div class="row pt-3">
+        <div class="col-12">
+            <h1 class="pt-2 tituloBorderLeft">Enrolamiento de Empleado</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="">
+            <h3 class="p-1 frmlabel">Datos Personales</h3>
+        </div>
+
+        <form [formGroup]="empleadoForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label frmlabel required" for="rfc">RFC</label>
+                    <div class="input-icon-wrapper">
+                        <i [ngClass]="getValidationStatus('rfc') == 'valid' ? 'fas fa-check-circle icon valid-icon' : getValidationStatus('rfc') == 'invalid' ? 'fas fa-times-circle icon invalid-icon': 'd-none'"></i>
+                        <input id="rfc" type="text" placeholder="RFC del empleado" formControlName="rfc" class="form-control"
+                            [class.invalid]="getValidationStatus('rfc') == 'invalid'"
+                            [class.valid]="getValidationStatus('rfc') == 'valid'" />
+                    </div>
+                    <p *ngIf="getValidationStatus('rfc') == 'invalid'" class="invalid-field">Campo obligatorio (10-13 caracteres).</p>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label frmlabel required" for="nombre">Nombre</label>
+                    <div class="input-icon-wrapper">
+                        <i [ngClass]="getValidationStatus('nombre') == 'valid' ? 'fas fa-check-circle icon valid-icon' : getValidationStatus('nombre') == 'invalid' ? 'fas fa-times-circle icon invalid-icon': 'd-none'"></i>
+                        <input id="nombre" type="text" placeholder="Nombre(s)" formControlName="nombre" class="form-control"
+                            [class.invalid]="getValidationStatus('nombre') == 'invalid'"
+                            [class.valid]="getValidationStatus('nombre') == 'valid'" />
+                    </div>
+                    <p *ngIf="getValidationStatus('nombre') == 'invalid'" class="invalid-field">Campo obligatorio.</p>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label frmlabel required" for="paterno">Apellido Paterno</label>
+                    <div class="input-icon-wrapper">
+                        <i [ngClass]="getValidationStatus('paterno') == 'valid' ? 'fas fa-check-circle icon valid-icon' : getValidationStatus('paterno') == 'invalid' ? 'fas fa-times-circle icon invalid-icon': 'd-none'"></i>
+                        <input id="paterno" type="text" placeholder="Apellido Paterno" formControlName="paterno" class="form-control"
+                            [class.invalid]="getValidationStatus('paterno') == 'invalid'"
+                            [class.valid]="getValidationStatus('paterno') == 'valid'" />
+                    </div>
+                    <p *ngIf="getValidationStatus('paterno') == 'invalid'" class="invalid-field">Campo obligatorio.</p>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-md-4">
+                    <label class="form-label frmlabel" for="materno">Apellido Materno</label>
+                    <div class="input-icon-wrapper">
+                        <input id="materno" type="text" placeholder="Apellido Materno" formControlName="materno" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label frmlabel" for="puesto">Puesto</label>
+                    <div class="input-icon-wrapper">
+                        <input id="puesto" type="text" placeholder="Ej. Analista" formControlName="puesto" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label frmlabel" for="adscripcion">Adscripción</label>
+                    <div class="input-icon-wrapper">
+                        <input id="adscripcion" type="text" placeholder="Ej. Dirección General" formControlName="adscripcion" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label class="form-label frmlabel" for="inicio_vig">Inicio de Vigencia</label>
+                    <input type="date" id="inicio_vig" class="form-control" formControlName="inicio_vig" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label frmlabel" for="fin_vig">Fin de Vigencia</label>
+                    <input type="date" id="fin_vig" class="form-control" formControlName="fin_vig" />
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="">
+                    <h3 class="p-1 frmlabel">Fotografía</h3>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <label class="form-label frmlabel text-center d-block">Cargar Foto de Credencial</label>
+                    
+                    <label for="fotoInput" class="form-label d-block text-center">
+                        <div id="drop-zone" class="drop-zone">
+                            <i class="fas fa-camera"></i> <span class="ms-2">Seleccionar foto (JPG/PNG)</span>
+                        </div>
+                    </label>
+                    <input type="file" accept="image/jpeg, image/png" id="fotoInput" class="hidden-input" (change)="onFotoSeleccionada($event)">
+
+                    <div class="row mt-3" *ngIf="foto && foto.preview">
+                        <div class="col-12 text-center">
+                            <div class="image-preview-container p-2 border rounded bg-light">
+                                <img [src]="foto.preview" alt="Vista previa" style="max-height: 200px; max-width: 100%;">
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-danger" (click)="borrarFoto()">
+                                        <i class="fas fa-trash-alt"></i> Quitar foto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-auxiliary text-muted pt-4">* Campos obligatorios</p>
+
+            <div class="row pt-4 mb-5">
+                <div class="col-12 text-center">
+                    <button class="m-2 btn btn-primary btn-lg" (click)="openConfirmModal()" [disabled]="empleadoForm.invalid">
+                        <i class="fas fa-save"></i> Guardar Expediente
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<ng-template #confirmModal>
+    <p><strong>¿Está seguro de registrar este expediente?</strong></p>
+    <p class="text-muted small">Asegúrese de que la fotografía sea correcta.</p>
+</ng-template>
+
+<ng-template #respuestaRegistroModal>
+    <div class="p-2 text-center">
+        <h4 class="frmlabel text-center p-3 text-success">Expediente Guardado Correctamente</h4>
+        <i class="fas fa-id-card fa-3x text-success mb-3"></i>
+        <p>Los datos han sido enviados al servidor.</p>
+    </div>
+</ng-template>

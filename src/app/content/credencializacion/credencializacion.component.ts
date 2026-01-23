@@ -152,69 +152,74 @@ export class CredencializacionComponent implements OnInit {
 
   async imprimirCredencial(persona: any) {
     if (!persona.num_empleado) {
-      this.utils.MuestrasToast(TipoToast.Warning, 'No se puede imprimir: El registro no cuenta con número de empleado.');
+      this.utils.MuestrasToast(TipoToast.Warning, 'No se puede imprimir: Falta número de empleado.');
       return;
     }
 
-    this.utils.MuestrasToast(TipoToast.Info, 'Generando PDF, por favor espere...');
+    this.utils.MuestrasToast(TipoToast.Info, 'Generando PDF');
     this.empleadoImprimir = { ...persona };
     
-    // Esperar a que Angular actualice la vista y cargue las imágenes
+    // Esperamos a que Angular renderice
     setTimeout(async () => {
         try {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const options = { scale: 4, useCORS: true, logging: false };
+            // Dimensiones del PDF: 5.4 x 8.6 mm (tamaño credencial CR80)
+            const pdfWidth = 54.0;
+            const pdfHeight = 86.0;
+            const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]); 
 
-            // 1. Capturar Frente
+            // ⚙️ AJUSTE MANUAL - Modifica estos valores para ajustar el tamaño de la imagen
+            const imgWidth = pdfWidth;        // Ancho de la imagen (mismo que PDF)
+            const imgHeight = 86.0;           //  AJUSTA ESTE VALOR para hacer la imagen más baja o más alta
+                                              // Valores sugeridos: 78-82 mm
+                                              // Mientras más bajo, más comprimida verticalmente
+            
+            // Centramos la imagen en el PDF
+            const xOffset = (pdfWidth - imgWidth) / 2;
+            const yOffset = (pdfHeight - imgHeight) / 2;
+
+            // Opciones optimizadas para html2canvas
+            const options = { 
+              scale: 2,
+              useCORS: true,      
+              logging: false,
+              backgroundColor: '#ffffff',
+              removeContainer: false
+            };
+
+            // --- FRENTE ---
             if (this.plantillaImprimir) {
                 this.plantillaImprimir.vistaCredencial = 'frente';
-                // Esperar renderizado
-                await new Promise(resolve => setTimeout(resolve, 500)); 
+                await new Promise(resolve => setTimeout(resolve, 400));
                 
-                const element = this.printContainer.nativeElement;
+                const element = this.printContainer.nativeElement.querySelector('.credencial-frente');
                 const canvasFront = await html2canvas(element, options);
-                const imgDataFront = canvasFront.toDataURL('image/png');
+                const imgDataFront = canvasFront.toDataURL('image/png', 1.0); 
                 
-                // Calcular dimensiones - ambas tarjetas deben caber en A4 (297mm alto)
-                const cardWidth = 120; // Ancho fijo para las tarjetas
-                const aspectRatioFront = canvasFront.height / canvasFront.width;
-                const cardHeightFront = cardWidth * aspectRatioFront;
-                
-                // Centrar en A4 (210 x 297 mm)
-                const x = (210 - cardWidth) / 2;
-                let y = 12;
-
-                pdf.setFontSize(12);
-                pdf.text('Frente', 105, y, { align: 'center' });
-                y += 3;
-                pdf.addImage(imgDataFront, 'PNG', x, y, cardWidth, cardHeightFront);
-
-                // 2. Capturar Reverso
-                this.plantillaImprimir.vistaCredencial = 'reverso';
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                const canvasBack = await html2canvas(element, options);
-                const imgDataBack = canvasBack.toDataURL('image/png');
-                
-                const aspectRatioBack = canvasBack.height / canvasBack.width;
-                const cardHeightBack = cardWidth * aspectRatioBack;
-
-                y += cardHeightFront + 8; // Espacio entre tarjetas
-                pdf.setFontSize(12);
-                pdf.text('Reverso', 105, y, { align: 'center' });
-                y += 3;
-                pdf.addImage(imgDataBack, 'PNG', x, y, cardWidth, cardHeightBack);
-
-                pdf.save(`Credencial_${persona.num_empleado}.pdf`);
-                
-                this.utils.MuestrasToast(TipoToast.Success, 'PDF generado correctamente');
+                pdf.addImage(imgDataFront, 'PNG', xOffset, yOffset, imgWidth, imgHeight, '', 'FAST');
             }
+
+            // --- REVERSO ---
+            if (this.plantillaImprimir) {
+                this.plantillaImprimir.vistaCredencial = 'reverso';
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                const elementReverso = this.printContainer.nativeElement.querySelector('.credencial-reverso');
+                const canvasBack = await html2canvas(elementReverso, options);
+                const imgDataBack = canvasBack.toDataURL('image/png', 1.0);
+                
+                pdf.addPage();
+                pdf.addImage(imgDataBack, 'PNG', xOffset, yOffset, imgWidth, imgHeight, '', 'FAST');
+            }
+
+            pdf.save(`Credencial_${persona.num_empleado}.pdf`);
+            this.utils.MuestrasToast(TipoToast.Success, 'PDF generado correctamente');
+
         } catch (error) {
-            console.error(error);
+            console.error('Error:', error);
             this.utils.MuestrasToast(TipoToast.Error, 'Error al generar PDF');
         } finally {
-            this.empleadoImprimir = null; // Limpiar
+            this.empleadoImprimir = null;
         }
-    }, 100);
+    }, 800);
   }
 }

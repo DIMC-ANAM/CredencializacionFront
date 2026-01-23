@@ -137,12 +137,17 @@
 
 <!-- Contenedor oculto para impresión -->
 <div style="position: absolute; left: -9999px; top: -9999px;">
-    <div #printContainer style="width: 550px;">
+    <!-- Proporción correcta CR80: 54mm x 84.7mm = 1:1.568 
+         A 300 DPI: 638px x 1001px -->
+    <div #printContainer style="width: 638px; height: 1001px; margin: 0; padding: 0; overflow: hidden;">
+        
         <app-plantilla-enrolamiento 
             #plantillaImprimir
             [empleado]="empleadoImprimir" 
             [editable]="false"
-            [isPrintMode]="true">
+            [isPrintMode]="true"
+            style="width: 100%; height: 100%; display: block;">
         </app-plantilla-enrolamiento>
+
     </div>
 </div>

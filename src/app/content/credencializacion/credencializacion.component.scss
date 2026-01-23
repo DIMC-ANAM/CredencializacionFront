@@ -92,3 +92,17 @@
   font-size: 0.75rem;
   font-weight: 500;
 }
+
+.print-container-master {
+  // CAMBIO: Usamos 100% para que llene el contenedor padre del HTML
+  width: 100% !important;
+  height: 100% !important; 
+  position: relative;
+  background: white;
+  overflow: hidden;
+  
+  * { 
+    -webkit-print-color-adjust: exact; 
+    box-sizing: border-box !important;
+  }
+}

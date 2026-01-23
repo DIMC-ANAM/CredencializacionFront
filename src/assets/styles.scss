@@ -26,6 +26,24 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Noto Sans Black */
+@font-face {
+  font-family: 'NotoSans-Black';
+  src: url('/fonts/NotoSans-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Noto Sans Bold */
+@font-face {
+  font-family: 'NotoSans-Bold';
+  src: url('/fonts/NotoSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
  /* Colores principales */
     --color-primary: #9F2241;

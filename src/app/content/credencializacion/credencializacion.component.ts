@@ -48,6 +48,14 @@ export class CredencializacionComponent implements OnInit {
     this.enrolamientoService.getDataTableImprimir().subscribe(
       (data: any) => {
         this.personal = data;
+        
+        // Ordenar por fecha_enrolamiento descendente (más reciente primero)
+        this.personal.sort((a: any, b: any) => {
+          const fechaA = a.fecha_enrolamiento ? new Date(a.fecha_enrolamiento).getTime() : 0;
+          const fechaB = b.fecha_enrolamiento ? new Date(b.fecha_enrolamiento).getTime() : 0;
+          return fechaB - fechaA; // Orden descendente
+        });
+        
         this.filteredPersonal = [...this.personal];
         this.totalPages = Math.ceil(this.filteredPersonal.length / this.pageSize);
         this.currentPage = 0;
@@ -213,6 +221,18 @@ export class CredencializacionComponent implements OnInit {
 
             pdf.save(`Credencial_${persona.num_empleado}.pdf`);
             this.utils.MuestrasToast(TipoToast.Success, 'PDF generado correctamente');
+
+            // Marcar como impreso en el backend y actualizar tabla
+            if (persona.id_enrolamiento) {
+              this.enrolamientoService.marcarComoImpreso(persona.id_enrolamiento, persona.fecha_expedicion).subscribe({
+                next: () => {
+                  this.obtenerCredenciales();
+                },
+                error: (err) => {
+                  console.error('Error al marcar como impreso:', err);
+                }
+              });
+            }
 
         } catch (error) {
             console.error('Error:', error);

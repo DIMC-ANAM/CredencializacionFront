@@ -22,19 +22,15 @@
                 <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
             </h6>
             <form class="row gx-3 align-items-end">
-                <div class="col-12 col-md-3 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <label class="form-label small fw-bold text-secondary">Fecha Inicio</label>
                     <input type="date" class="form-control" [(ngModel)]="startDate" name="startDate">
                 </div>
-                <div class="col-12 col-md-3 mb-3">
+                <div class="col-12 col-md-4 mb-3">
                     <label class="form-label small fw-bold text-secondary">Fecha Fin</label>
                     <input type="date" class="form-control" [(ngModel)]="endDate" name="endDate">
                 </div>
-                <div class="col-12 col-md-4 mb-3">
-                    <label class="form-label small fw-bold text-secondary">Folio asunto</label>
-                    <input type="text" class="form-control" [(ngModel)]="folio" name="folio" placeholder="Ej. SCG-ANAM-0001" (keyup.enter)="applyFilter()">
-                </div>
-                <div class="col-12 col-md-2 mb-3 d-flex gap-2">
+                <div class="col-12 col-md-4 mb-3 d-flex gap-2">
                     <button type="button" class="btn btn-primary w-100" (click)="applyFilter()" [disabled]="isLoading">
                         <i class="fas fa-search me-1"></i> Buscar
                     </button>
@@ -97,7 +93,7 @@
                 
                 <div class="p-2 overflow-auto" style="height: calc(100% - 53px);">
                     <div *ngFor="let col of columnDefs" class="mb-1 px-2"> 
-                        <div class="form-check form-switch py-2" *ngIf="col.field !== 'actions' && col.field !== 'asuntoFolio' && col.field !== 'statusTurnado'">
+                        <div class="form-check form-switch py-2" *ngIf="col.field !== 'actions' && col.field !== 'num_empleado' && col.field !== 'rfc' && col.field !== 'curp'">
                             <input class="form-check-input" 
                                    type="checkbox" 
                                    role="switch"
@@ -117,60 +113,38 @@
             </div>
 
         </div>
-        
-        <div class="card-footer bg-light py-2 border-top" *ngIf="paginacion">
-            <small class="text-muted">
-                Mostrando {{ rowData.length }} registros de un total de {{ paginacion.totalRegistros }}.
-            </small>
-        </div>
     </div>
 </div>
-<ng-template #verDocumentoModal let-aceptar="aceptar" let-cancelar="cancelar">
-    <div class="visor d-flex flex-row">
-        <!-- Sidebar lista de documentos -->
-        <div class="document-list bg-light border-end d-flex flex-column" style="width: 280px; min-width: 280px;">
-            <div class="p-3 border-bottom bg-white">
-                <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-folder-open me-2"></i>Expediente del asunto</h6>
-                <small class="text-muted">{{ currentAsuntoFolio }}</small>
+
+<!-- Modal para visualizar/editar credencial -->
+<ng-template #modalVisualizar>
+    <div class="modal-body" *ngIf="empleadoSeleccionado">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" [(ngModel)]="esEditable">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Editar</label>
             </div>
-            <div class="flex-grow-1 overflow-auto p-2">
-                <ng-container *ngFor="let key of documentGroupKeys">
-                    <div *ngIf="documentosAgrupados[key] && documentosAgrupados[key].length > 0" class="group-section mb-2">
-                        <div class="d-flex justify-content-between align-items-center px-2 py-1">
-                            <strong class="small text-muted">{{ keyLabel(key) }}</strong>
-                            <span class="badge bg-secondary small">{{ documentosAgrupados[key].length }}</span>
-                        </div>
-                        <div class="list-group list-group-flush">
-                            <button type="button" 
-                                    class="list-group-item list-group-item-action border-0 rounded mb-1 d-flex align-items-center"
-                                    *ngFor="let doc of documentosAgrupados[key]" 
-                                    (click)="cargarDocumentoEnVisor(doc)"
-                                    [class.active]="doc === documentoActual">
-                                <i class="fas me-2" [ngClass]="doc.nombre.endsWith('.pdf') ? 'fa-file-pdf' : (doc.nombre.endsWith('.jpg') || doc.nombre.endsWith('.png') ? 'fa-file-image' : 'fa-file')"></i>
-                                <div class="text-truncate" [title]="doc.nombre">{{ doc.nombre }}</div>
-                                <small class="text-muted ms-auto">{{ humanFileSize(doc.size) }}</small>
-                            </button>
-                        </div>
-                    </div>
-                </ng-container>
-            </div>
+            <button class="btn btn-primary" (click)="guardarCambios(plantilla)" [disabled]="!esEditable">
+                <i class="fas fa-save mr-1"></i> Guardar
+            </button>
         </div>
-
-        <!-- Visor -->
-        <div class="pdf-container flex-grow-1 position-relative">
-            <div class="pdf-header p-2">
-                <p class="pdf-title"><i class="fa-solid fa-file-alt m-2"></i> {{documentoVisor?.nombre || 'Cargando...'}}</p>
-            </div>
-
-            <!-- Aquí va el PDF embebido -->
-            <embed [src]="documentVisorURL" type="application/pdf" class="pdf-viewer" id="pdfViewer"
-                *ngIf="documentVisorURL" />
-
-            <div class="pdf-info" *ngIf="documentoVisor">
-                <strong>Archivo:</strong> {{documentoVisor.nombre}} |
-                <strong>Tamaño:</strong> {{documentoVisor.size |  sizeFormat }} |
-                <!-- <strong>Tipo: </strong>{{documentoVisor.type || null }} -->
-            </div>
-        </div>
+        
+        <app-plantilla-enrolamiento 
+            #plantilla 
+            [empleado]="empleadoSeleccionado" 
+            [editable]="esEditable"
+            (enrolamientoCompletado)="onEnrolamientoCompletado()">
+        </app-plantilla-enrolamiento>
     </div>
 </ng-template>
+
+<!-- Contenedor oculto para imprimir -->
+<div #printContainer style="position: absolute; left: -9999px; top: -9999px;">
+    <app-plantilla-enrolamiento 
+        #plantillaImprimir
+        *ngIf="empleadoImprimir"
+        [empleado]="empleadoImprimir" 
+        [isPrintMode]="true"
+        [editable]="false">
+    </app-plantilla-enrolamiento>
+</div>

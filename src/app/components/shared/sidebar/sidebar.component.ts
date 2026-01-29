@@ -20,6 +20,13 @@ export class SidebarComponent implements OnInit {
   ){}
   menuItems = [
     {
+      id: 'Carga masiva',
+      label: 'Carga masiva',      
+      icon: 'fas fa-upload',
+      link: '/carga-masiva',
+      rol: [1,2,9999],
+    },
+    {
       id: 'enrolamiento',
       label: 'Enrolamiento',      
       icon: 'fas fa-user-plus',
@@ -28,7 +35,7 @@ export class SidebarComponent implements OnInit {
     },
     {
       id: 'credencializacion',
-      label: 'Credencialización',      
+      label: 'Impresión',      
       icon: 'fas fa-id-card',
       link: '/credencializacion',
       rol: [1,2,3,9999],

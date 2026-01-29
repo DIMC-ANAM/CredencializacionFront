@@ -7,6 +7,7 @@ import { TipoToast } from '../../../../api/entidades/enumeraciones';
 import { Router } from '@angular/router';
 import { WacomService } from '../../../services/wacom.service';
 import { Subscription } from 'rxjs';
+import * as QRCode from 'qrcode';
 
 @Component({
   standalone: false,
@@ -38,6 +39,7 @@ export class PlantillaEnrolamientoComponent implements AfterViewInit, OnChanges,
   guardando: boolean = false;
   vistaCredencial: 'frente' | 'reverso' = 'frente';
   fechaActual: Date = new Date();
+  qrCodeDataUrl: string | null = null;
 
   // Variables Camara
   dispositivosVideo: MediaDeviceInfo[] = []; 
@@ -74,6 +76,83 @@ export class PlantillaEnrolamientoComponent implements AfterViewInit, OnChanges,
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['empleado'] && this.empleado) {
         this.corregirUrls();
+        this.inicializarFechaExpedicion();
+        this.generarQR();
+        this.asignarFolioSiHaceFalta();
+    }
+  }
+
+  // ----------------------------
+  // FOLIO DESDE BACKEND
+  // ----------------------------
+  private asignarFolioSiHaceFalta() {
+    if (!this.empleado) return;
+    if (this.empleado.folio && String(this.empleado.folio).trim() !== '') return;
+
+    // Obtener siguiente folio desde el backend
+    this.enrolamientoApi.obtenerFolioMaximo().subscribe({
+      next: (res: any) => {
+        if (res && res.status === 'success' && res.siguiente_folio) {
+          this.empleado.folio = res.siguiente_folio;
+        }
+      },
+      error: (err) => {
+        console.error('Error al obtener folio:', err);
+        this.utils.MuestrasToast(TipoToast.Warning, 'No se pudo obtener el folio automáticamente');
+      }
+    });
+  }
+
+  inicializarFechaExpedicion() {
+    if (!this.empleado) return;
+    
+    // Establecer fecha_expedicion como el día de hoy si no existe
+    if (!this.empleado.fecha_expedicion) {
+      const hoy = new Date();
+      this.empleado.fecha_expedicion = hoy.toISOString().split('T')[0]; // Formato: YYYY-MM-DD
+    }
+  }
+
+  async generarQR() {
+    if (!this.empleado) {
+      this.qrCodeDataUrl = null;
+      return;
+    }
+
+
+    // Construir el texto del QR con los datos separados por pipe |
+    const datosQR = [
+      this.empleado.id_enrolamiento || '',
+      this.empleado.num_empleado || '',
+      this.empleado.rfc || '',
+      this.empleado.curp || '',
+      this.empleado.nombre || '',
+      this.empleado.paterno || '',
+      this.empleado.materno || '',
+      this.empleado.puesto || '',
+      this.empleado.adscripcion || '',
+      this.empleado.inicio_vig || '',
+      this.empleado.fin_vig || '',
+      this.empleado.eladia || '',
+      this.empleado.folio || '',
+      this.empleado.fecha_expedicion || '',
+      this.empleado.fecha_registro || ''
+    ].join('|');
+
+    try {
+      // Generar el QR como data URL con opciones optimizadas para impresión
+      this.qrCodeDataUrl = await QRCode.toDataURL(datosQR, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 200,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    } catch (error) {
+      console.error('Error al generar código QR:', error);
+      this.qrCodeDataUrl = null;
     }
   }
 
@@ -94,7 +173,7 @@ export class PlantillaEnrolamientoComponent implements AfterViewInit, OnChanges,
         return `data:image/jpeg;base64,${str}`;
     };
 
-    this.empleado.foto = procesar(this.empleado.foto);11
+    this.empleado.foto = procesar(this.empleado.foto);
     this.empleado.firma = procesar(this.empleado.firma);
   }
 
@@ -203,6 +282,7 @@ export class PlantillaEnrolamientoComponent implements AfterViewInit, OnChanges,
   confirmarFoto() {
     if (this.fotoCapturada && this.empleado) {
       this.empleado.foto = this.fotoCapturada;
+      this.generarQR(); // Regenerar QR después de actualizar datos
       if (this.modalCamaraRef) {
         this.modalCamaraRef.close();
       } else {
@@ -429,6 +509,19 @@ guardarEnrolamiento() {
 
     this.guardando = true;
 
+    // Formatear fecha_expedicion para enviar solo la fecha (YYYY-MM-DD) sin hora
+    let fechaExpedicionFormateada = this.empleado.fecha_expedicion;
+    if (fechaExpedicionFormateada) {
+      if (fechaExpedicionFormateada instanceof Date) {
+        fechaExpedicionFormateada = fechaExpedicionFormateada.toISOString().split('T')[0];
+      } else if (typeof fechaExpedicionFormateada === 'string') {
+        fechaExpedicionFormateada = fechaExpedicionFormateada.split('T')[0];
+      }
+    }
+
+    // Establecer fecha_enrolamiento con la fecha y hora actual en formato ISO
+    const fechaEnrolamientoActual = new Date().toISOString();
+
     // Preparamos los datos a enviar (Payload)
     // Solo mandamos lo que queremos actualizar para ahorrar ancho de banda
     const payload = {
@@ -444,7 +537,10 @@ guardarEnrolamiento() {
         adscripcion: this.empleado.adscripcion,
         inicio_vig: this.empleado.inicio_vig,
         fin_vig: this.empleado.fin_vig,
-        eladia: this.empleado.eladia
+        eladia: this.empleado.eladia,
+        fecha_expedicion: fechaExpedicionFormateada,
+        folio: this.empleado.folio,
+        fecha_enrolamiento: fechaEnrolamientoActual
     };
 
     // Detectamos si es una CREACIÓN o una ACTUALIZACIÓN

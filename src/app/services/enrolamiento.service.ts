@@ -53,4 +53,28 @@ export class EnrolamientoService {
   guardarEnrolamiento(datos: any): Observable<any> {
     return this.http.post(this.apiCredencializacionUrl, datos);
   }
+
+  // Obtener folio máximo / siguiente folio desde backend
+  obtenerFolioMaximo(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}obtener-folio-maximo/`);
+  }
+
+  // Marcar registro como impreso después de generar PDF
+  marcarComoImpreso(id: number, fechaExpedicion?: string): Observable<any> {
+    const payload = fechaExpedicion ? { fecha_expedicion: fechaExpedicion } : {};
+    return this.http.post(`${this.apiUrl}${id}/marcar-impreso/`, payload);
+  }
+
+  // Búsqueda avanzada con múltiples filtros
+  busquedaAvanzada(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}busqueda-avanzada/`, filtros);
+  }
+
+  // Estadísticas generales del sistema
+  obtenerEstadisticas(fechaDesde?: string, fechaHasta?: string): Observable<any> {
+    let params: any = {};
+    if (fechaDesde) params.fecha_desde = fechaDesde;
+    if (fechaHasta) params.fecha_hasta = fechaHasta;
+    return this.http.get(`${this.apiUrl}estadisticas/`, { params });
+  }
 }

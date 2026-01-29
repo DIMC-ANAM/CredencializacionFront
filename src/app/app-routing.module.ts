@@ -11,6 +11,7 @@ import { AccesoDenegadoComponent } from './content/acceso-denegado/acceso-denega
 import { RegistroEmpleadoComponent } from './content/registro-empleado/registro-empleado.component';
 import { EnrolamientoComponent } from './content/enrolamiento/enrolamiento.component';
 import { CredencializacionComponent } from './content/credencializacion/credencializacion.component';
+import { CargaMasivaComponent } from './content/carga-masiva/carga-masiva.component';
 
 const routes: Routes = [
   {
@@ -56,6 +57,12 @@ const routes: Routes = [
         component: CredencializacionComponent,
         canActivate: [AuthGuard],
         data: { rolesPermitidos: [1, 2, 3, 9999] },
+      },
+      {
+        path: 'carga-masiva',
+        component: CargaMasivaComponent,
+        canActivate: [AuthGuard],
+        data: { rolesPermitidos: [1, 2, 9999] },
       },
       {
         path: 'test',

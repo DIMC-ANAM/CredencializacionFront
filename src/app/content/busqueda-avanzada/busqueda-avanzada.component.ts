@@ -1,12 +1,14 @@
-import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ColDef, GridApi, GridReadyEvent, ValueFormatterParams } from 'ag-grid-community';
-import { CatalogoService } from '../../../api/catalogo/catalogo.service';
 import { UtilsService } from '../../services/utils.service';
 import { TipoToast } from '../../../api/entidades/enumeraciones';
 import { FechaMexicoPipe } from '../../../app/pipes/date-mx-format'; 
-import { AsuntoService } from '../../../api/asunto/asunto.service';
+import { EnrolamientoService } from '../../services/enrolamiento.service';
 import { ModalManagerService } from '../../components/shared/modal-manager.service';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { PlantillaEnrolamientoComponent } from '../enrolamiento/plantilla-enrolamiento/plantilla-enrolamiento.component';
 
 @Component({
   selector: 'app-busqueda-avanzada',
@@ -22,13 +24,20 @@ export class BusquedaAvanzadaComponent implements OnInit, OnDestroy {
   // Datos
   rowData: any[] = [];
   columnDefs: ColDef[] = []; 
-  paginacion: any = null;
-  resumenGeneral: any = null;
   
   // Filtros
   startDate: string = '';
   endDate: string = '';
-  folio: string = '';
+  
+  // Variables para modal y visualización
+  @ViewChild('modalVisualizar') modalVisualizar!: TemplateRef<any>;
+  empleadoSeleccionado: any = null;
+  esEditable: boolean = false;
+  
+  // Variables para impresión
+  empleadoImprimir: any = null;
+  @ViewChild('plantillaImprimir') plantillaImprimir!: PlantillaEnrolamientoComponent;
+  @ViewChild('printContainer') printContainer!: ElementRef;
   
   // Paginación y Estado
   currentPage: number = 1;
@@ -53,27 +62,12 @@ export class BusquedaAvanzadaComponent implements OnInit, OnDestroy {
   
   paginationPageSizeSelector = [10, 25, 50, 100, 200];
 
-  @ViewChild('verDocumentoModal') verDocumentoModal!: TemplateRef<any>;
-  documentoStringURL: string = '';
-  documentVisorURL: SafeResourceUrl | null = null;
-  documentoVisor: any = null;
-  documentosDisponibles: any[] = [];
-  documentoActual: any = null;
-  // Agrupación de documentos por categoría
-  documentosAgrupados: any = {
-    documentos: [],
-    anexos: [],
-    respuestas: []
-  };
-  currentAsuntoFolio: string = '';
-
   constructor(
-    private catalogoService: CatalogoService,
+    private enrolamientoService: EnrolamientoService,
     private fechaMexicoPipe: FechaMexicoPipe,
     private utils: UtilsService,
     private sanitizer: DomSanitizer,
-    private modalManager: ModalManagerService,
-    private asuntoService: AsuntoService
+    private modalManager: ModalManagerService
   ) {}
 
   ngOnInit(): void {
@@ -108,100 +102,97 @@ export class BusquedaAvanzadaComponent implements OnInit, OnDestroy {
     });
 
     this.columnDefs = [
+      { headerName: 'Num. Empleado', field: 'num_empleado', width: 140, hide: false, lockVisible: true, pinned: 'left', tooltipField: 'num_empleado' },
+      textCol({ headerName: 'RFC', field: 'rfc', width: 140, hide: false, lockVisible: true }),
+      textCol({ headerName: 'CURP', field: 'curp', width: 180, hide: false, lockVisible: true }),
+      textCol({ headerName: 'Nombre', field: 'nombre', width: 150, hide: false, lockVisible: true }),
+      textCol({ headerName: 'Apellido Paterno', field: 'paterno', width: 150, hide: false, lockVisible: true }),
+      textCol({ headerName: 'Apellido Materno', field: 'materno', width: 150, hide: false, lockVisible: true }),
+      textCol({ headerName: 'Puesto', field: 'puesto', width: 200, hide: false }),
+      textCol({ headerName: 'Adscripción', field: 'adscripcion', width: 220, hide: false }),
+      textCol({ headerName: 'Folio', field: 'folio', width: 120, hide: false }),
+      { 
+        headerName: 'Impreso', 
+        field: 'impreso', 
+        width: 110, 
+        hide: false,
+        cellStyle: params => {
+          const baseStyle = { display: 'flex', alignItems: 'center', fontWeight: 'bold', justifyContent: 'center' };
+          if (params.value === 1) return { ...baseStyle, color: '#1c5f3fff' }; 
+          return { ...baseStyle, color: '#6d2626ff' };
+        },
+        valueFormatter: (params) => params.value === 1 ? 'Sí' : 'No'
+      },
+      { 
+        headerName: 'Fecha Expedición', 
+        field: 'fecha_expedicion', 
+        width: 160, 
+        hide: false,
+        valueFormatter: (params) => this.dateFormatter(params, false),
+        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.fecha_expedicion } as any, false)
+      },
+      { 
+        headerName: 'Inicio Vigencia', 
+        field: 'inicio_vig', 
+        width: 160, 
+        hide: true,
+        valueFormatter: (params) => this.dateFormatter(params, false),
+        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.inicio_vig } as any, false)
+      },
+      { 
+        headerName: 'Fin Vigencia', 
+        field: 'fin_vig', 
+        width: 160, 
+        hide: true,
+        valueFormatter: (params) => this.dateFormatter(params, false),
+        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.fin_vig } as any, false)
+      },
+      { 
+        headerName: 'Fecha Registro', 
+        field: 'fecha_registro', 
+        width: 180, 
+        hide: true,
+        valueFormatter: (params) => this.dateFormatter(params, true),
+        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.fecha_registro } as any, true)
+      },
+      textCol({ headerName: 'Eladia', field: 'eladia', width: 120, hide: true }),
+      { 
+        headerName: 'Tiene Foto', 
+        field: 'foto', 
+        width: 120, 
+        hide: true,
+        cellRenderer: (params: any) => {
+          if (params.value) {
+            return '<i class="fas fa-check text-success"></i>';
+          }
+          return '<i class="fas fa-times text-danger"></i>';
+        }
+      },
+      { 
+        headerName: 'Tiene Firma', 
+        field: 'firma', 
+        width: 120, 
+        hide: true,
+        cellRenderer: (params: any) => {
+          if (params.value) {
+            return '<i class="fas fa-check text-success"></i>';
+          }
+          return '<i class="fas fa-times text-danger"></i>';
+        }
+      },
       { 
         headerName: 'Acciones', 
         field: 'actions', 
         pinned: 'right', 
-        width: 90,
-        minWidth: 90,
-        maxWidth: 90,
+        width: 100,
+        minWidth: 100,
+        maxWidth: 100,
         hide: false,
         lockVisible: true,
         sortable: false, 
         filter: false,
         cellRenderer: (params: any) => this.actionsRenderer(params)
-      },
-      { headerName: 'Folio Asunto', field: 'asuntoFolio', width: 150, hide: false, lockVisible: true, pinned: 'left', tooltipField: 'asuntoFolio', filter: false },
-      { 
-        headerName: 'Estatus', 
-        field: 'statusTurnado', 
-        width: 130, 
-        hide: false,
-        lockVisible: true,
-        cellStyle: params => {
-          const baseStyle = { display: 'flex', alignItems: 'center', fontWeight: 'bold' };
-          if (params.value === 'Recibido') return { ...baseStyle, color: '#273c6bff' }; 
-          if (params.value === 'Rechazado') return { ...baseStyle, color: '#6d2626ff' }; 
-          if (params.value === 'En trámite') return { ...baseStyle, color: '#80518eff' }; 
-          if (params.value === 'Atendido') return { ...baseStyle, color: '#1c5f3fff' }; 
-          return baseStyle;
-        }
-      },
-            // columnas de fechas formateadas 
-      { 
-        headerName: 'Fecha Registro', 
-        field: 'fechaRegistro', 
-        width: 160, 
-        hide: false,
-        lockVisible: true,
-        valueFormatter: (params) => this.dateFormatter(params, true),
-        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.fechaRegistro } as any, true)
-      },
-      
-      textCol({ headerName: 'Unidad Responsable', field: 'unidadArea', width: 220, hide: false, lockVisible: true, tooltipField: 'unidadResonsable' }),
-      textCol({ headerName: 'Tema', field: 'asuntoTema', width: 180, hide: false, lockVisible: true, tooltipField: 'asuntoTema' }),
-      { 
-        headerName: 'Fecha Modificación', 
-        field: 'fechaModificacion', 
-        width: 180, 
-        hide: false, 
-        lockVisible: true, 
-        valueFormatter: (params) => this.dateFormatter(params, true),
-        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.fechaModificacion } as any, true)
-      },
-      { 
-        headerName: 'Fecha Recepción', 
-        field: 'asuntoFechaRecepcion', 
-        width: 160, 
-        hide: false, 
-        lockVisible: true, 
-        valueFormatter: (params) => this.dateFormatter(params, true),
-        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.asuntoFechaRecepcion } as any, true)
-      },
-      { 
-        headerName: 'Fecha Documento', 
-        field: 'asuntoFechaDocumento', 
-        width: 140, 
-        hide: true, 
-        valueFormatter: (params) => this.dateFormatter(params, false),
-        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.asuntoFechaDocumento } as any, false)
-      },
-      { 
-        headerName: 'Fecha Cumplimiento', 
-        field: 'asuntoFechaCumplimiento', 
-        width: 160, 
-        hide: true, 
-        valueFormatter: (params) => this.dateFormatter(params, false),
-        filterValueGetter: (params: any) => this.dateFormatter({ value: params.data.asuntoFechaCumplimiento } as any, false)
-      },
-      // columnas ocultas
-      textCol({ headerName: 'Tiempo de Atención', field: 'tiempoAtencionFormateado', width: 180, hide: true }),
-      textCol({ headerName: 'Instrucción', field: 'nombreInstruccion', width: 200, hide: true }),
-      textCol({ headerName: 'Respuesta', field: 'respuesta', width: 250, hide: true, tooltipField: 'respuesta' }),
-      textCol({ headerName: 'Motivo Rechazo', field: 'motivoRechazo', width: 250, hide: true, tooltipField: 'motivoRechazo' }),
-      
-      textCol({ headerName: 'No. Oficio', field: 'asuntoNoOficio', width: 150, hide: true }),
-      textCol({ headerName: 'Tipo Documento', field: 'asuntoTipoDocumento', width: 130, hide: true }),
-      textCol({ headerName: 'Remitente', field: 'asuntoRemitente', width: 180, hide: true }),
-      textCol({ headerName: 'Cargo Remitente', field: 'asuntoRemitenteCargo', width: 150, hide: true }),
-      textCol({ headerName: 'Dependencia Rem.', field: 'asuntoRemitenteDependencia', width: 180, hide: true }),
-      textCol({ headerName: 'Dirigido A', field: 'asuntoDirigidoA', width: 180, hide: true }),
-      textCol({ headerName: 'Descripción', field: 'asuntoDescripcion', width: 300, hide: true, tooltipField: 'asuntoDescripcion' }),
-      textCol({ headerName: 'Prioridad', field: 'asuntoPrioridad', width: 110, hide: true }),
-      textCol({ headerName: 'Medio', field: 'asuntoMedio', width: 120, hide: true }),
-      textCol({ headerName: 'Observaciones', field: 'asuntoObservaciones', width: 250, hide: true }),
-
-      { headerName: 'Última Operación', field: 'ultimaOperacion', width: 160, hide: true }
+      }
     ];
   }
 
@@ -250,173 +241,60 @@ export class BusquedaAvanzadaComponent implements OnInit, OnDestroy {
 
   actionsRenderer(params: any) {
     return `
-      <div class="d-flex gap-3 justify-content-center align-items-center w-100 h-100">
-        <i class="fas fa-eye text-secondary action-icon" data-action="view" data-id="${params.data.idTurnado}" title="Ver documentos"></i>
-        <i class="fa solid fa-download text-secondary action-icon" data-action="download" data-id="${params.data.idAsunto}" title="Descargar Zip"></i>
+      <div class="d-flex gap-2 justify-content-center align-items-center w-100 h-100">
+        <span class="tooltip-wrapper" data-tooltip="Visualizar Credencial">
+          <i class="tool-icon fas fa-eye" data-action="view" data-id="${params.data.id_enrolamiento}" title="Visualizar" style="cursor: pointer;"></i>
+        </span>
+        <span class="tooltip-wrapper" data-tooltip="Imprimir">
+          <i class="tool-icon fas fa-print" data-action="print" data-id="${params.data.id_enrolamiento}" title="Imprimir" style="cursor: pointer;"></i>
+        </span>
       </div>`;
   }
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
   }
-  loadInitialData(): void { this.buscarTurnados(); }
-  applyFilter(): void { this.currentPage = 1; this.buscarTurnados(); }
-  clearFilter(): void {
-    this.startDate = ''; this.endDate = ''; this.folio = '';
-    this.currentPage = 1; this.buscarTurnados();
+  
+  loadInitialData(): void { 
+    this.buscarCredenciales(); 
   }
   
-  buscarTurnados(): void {
+  applyFilter(): void { 
+    if (this.startDate && this.endDate) {
+      if (new Date(this.startDate) > new Date(this.endDate)) {
+        this.utils.MuestrasToast(TipoToast.Warning, 'La fecha de inicio debe ser menor a la fecha fin');
+        return;
+      }
+    }
+    this.currentPage = 1; 
+    this.buscarCredenciales(); 
+  }
+  
+  clearFilter(): void {
+    this.startDate = ''; 
+    this.endDate = ''; 
+    this.currentPage = 1; 
+    this.buscarCredenciales();
+  }
+  
+  buscarCredenciales(): void {
     this.isLoading = true;
-    const postData = {
-      fechaInicio: this.startDate || null,
-      fechaFin: this.endDate || null,
-      folio: this.folio || null,
-      ordenamiento: 'fecha', direccion: 'DESC', limite: 10000, offset: 0
-    };
+    const filtros: any = {};
+    
+    if (this.startDate) filtros.fecha_registro_desde = this.startDate;
+    if (this.endDate) filtros.fecha_registro_hasta = this.endDate;
 
-    this.catalogoService.busquedaAvanzadaTurnados(postData).subscribe({
+    this.enrolamientoService.busquedaAvanzada(filtros).subscribe({
       next: (response: any) => {
-        if (response.status === 200 && response.model) {
-          this.rowData = response.model.detalleTurnados || [];
-          this.resumenGeneral = response.model.resumenGeneral;
-          this.paginacion = response.model.paginacion;
-        } else {
-            this.utils.MuestrasToast(TipoToast.Warning, response.message || 'No se encontraron resultados.');
-            this.rowData = [];
-            this.resumenGeneral = null;
-            this.paginacion = null;
-        }
+        this.rowData = response || [];
+        this.totalRecords = this.rowData.length;
         this.isLoading = false;
       },
       error: (error: any) => {
         this.utils.MuestraErrorInterno(error);
+        this.rowData = [];
         this.isLoading = false;
       }
-    });
-  }
-
-  onCellClicked(event: any): void {
-    const target = event.event.target;
-    if (target.dataset.action) this.handleAction(target.dataset.action, target.dataset.id, event.data);
-  }
-
-  handleAction(action: string, id: string, rowData: any): void {
-    if (action === 'view') {
-      this.verOficio(rowData);
-    } else if (action === 'download') {
-      this.descargarOficio(rowData);
-    }
-  }
-
-  verOficio(data: any) {
-    this.currentAsuntoFolio = data.asuntoFolio;
-    this.documentosDisponibles = [];
-    this.documentoActual = null;
-    this.documentVisorURL = null;
-
-    // 1. Consultar expediente del asunto
-    this.asuntoService.consultarExpedienteAsunto({ idAsunto: data.idAsunto }).subscribe({
-        next: (response: any) => {
-            if (response.status === 200 && response.model) {
-                this.documentosAgrupados = response.model;
-                
-                // 2. Cargar el primer documento por defecto
-                const preferred = (this.documentosAgrupados.documentos?.[0] || this.documentosAgrupados.anexos?.[0] || this.documentosAgrupados.respuestas?.[0]);
-                if (preferred) this.cargarDocumentoEnVisor(preferred);
-                
-                // 3. Abrir modal
-                this.modalManager.openModal({
-                    title: 'Visor de Documentos',
-                    template: this.verDocumentoModal,
-                    showFooter: false,
-                    onAccept: () => {},
-                    onCancel: () => {
-                        this.documentVisorURL = null;
-                        this.documentosDisponibles = [];
-                    },
-                    width: '400px',
-                });
-            } else {
-                this.utils.MuestrasToast(TipoToast.Error, 'No se encontraron documentos asignados al asunto.');
-            }
-        },
-        error: (error) => {
-            this.utils.MuestrasToast(TipoToast.Error, 'Error al consultar el expediente.');
-        }
-    });
-  }
-
-  cargarDocumentoEnVisor(doc: any) {
-      this.documentoActual = doc;
-      this.documentVisorURL = null;
-      
-      this.asuntoService.verDocumento({ id: this.currentAsuntoFolio, relativePath: doc.ruta }).subscribe({
-        next: (blob: Blob) => {
-            if (blob.size > 0) {
-                const url = URL.createObjectURL(blob) + '#view=FitH';
-                this.documentVisorURL = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-                this.documentoVisor = { 
-                    nombre: doc.nombre, 
-                    size: blob.size, 
-                    fechaRegistro: new Date(), 
-                    type: blob.type 
-                };
-            } else {
-                this.utils.MuestrasToast(TipoToast.Error, 'El documento está vacío.');
-            }
-        },
-        error: (error) => {
-            this.utils.MuestrasToast(TipoToast.Error, 'Error al cargar el contenido del documento.');
-        }
-      });
-  }
-
-  // Helper para obtener llaves en orden
-  get documentGroupKeys(): string[] {
-    return ['documentos', 'anexos', 'respuestas'];
-  }
-
-  // Etiqueta legible para la llave
-  keyLabel(key: string): string {
-    switch (key) {
-      case 'documentos': return 'Documento(s) principal(es)';
-      case 'anexos': return 'Anexos';
-      case 'respuestas': return 'Respuestas / Turnados';
-      default: return 'Otros';
-    }
-  }
-
-  // Mostrar tamaño legible
-  humanFileSize(size: number): string {
-    if (!size && size !== 0) return '';
-    const i = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
-    const sizes = ['B','KB','MB','GB','TB'];
-    return (size / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + sizes[i];
-  }
-
-  descargarOficio(data: any) {
-    this.asuntoService.descargarExpediente({ id: data.asuntoFolio }).subscribe({
-      next: (blob: Blob) => {
-        if (blob.size > 0) {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Asunto-${data.asuntoFolio}.zip`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            this.utils.MuestrasToast(TipoToast.Info, 'Generando zip.');
-        } else {
-            this.utils.MuestrasToast(TipoToast.Warning, 'No se encontró el expediente para descargar.');
-        }
-      },
-      error: (error) => {
-        this.utils.MuestrasToast(TipoToast.Error, 'Error al descargar el expediente.');
-      },
-      
-      
     });
   }
 
@@ -442,18 +320,127 @@ export class BusquedaAvanzadaComponent implements OnInit, OnDestroy {
       // Obtener solo las columnas visibles actualmente
       const visibleColumns = this.gridApi.getAllDisplayedColumns();
       
-      // Filtrar la columna de acciones si es que está visible
+      // Filtrar la columna de acciones
       const columnKeys = visibleColumns
         ?.filter((col: any) => col.getColId() !== 'actions')
         .map((col: any) => col.getColId());
 
       this.gridApi.exportDataAsCsv({
-        fileName: `reporte_turnados_${dateStr}.csv`,
+        fileName: `reporte_credenciales_${dateStr}.csv`,
         columnKeys: columnKeys
       });
     }
   }
 
-  openDocumentoVisor(file: any) {}
+  onCellClicked(event: any): void {
+    const target = event.event.target;
+    if (target.dataset.action) {
+      this.handleAction(target.dataset.action, target.dataset.id, event.data);
+    }
+  }
 
+  handleAction(action: string, id: string, rowData: any): void {
+    if (action === 'view') {
+      this.visualizarCredencial(rowData);
+    } else if (action === 'print') {
+      this.imprimirCredencial(rowData);
+    }
+  }
+
+  visualizarCredencial(persona: any) {
+    this.empleadoSeleccionado = { ...persona };
+    this.esEditable = false;
+    this.modalManager.openModal({
+      title: 'Visualizar Credencial',
+      template: this.modalVisualizar,
+      width: '400px',
+      showFooter: false
+    });
+  }
+
+  guardarCambios(plantilla: any) {
+    if (plantilla) {
+      plantilla.guardarEnrolamiento();
+    }
+  }
+
+  onEnrolamientoCompletado() {
+    this.modalManager.closeModal();
+    this.buscarCredenciales();
+  }
+
+  async imprimirCredencial(persona: any) {
+    if (!persona.num_empleado) {
+      this.utils.MuestrasToast(TipoToast.Warning, 'No se puede imprimir: Falta número de empleado.');
+      return;
+    }
+
+    this.utils.MuestrasToast(TipoToast.Info, 'Generando PDF');
+    this.empleadoImprimir = { ...persona };
+    
+    setTimeout(async () => {
+        try {
+            const pdfWidth = 54.0;
+            const pdfHeight = 86.0;
+            const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]); 
+
+            const imgWidth = pdfWidth;
+            const imgHeight = 86.0;
+            
+            const xOffset = (pdfWidth - imgWidth) / 2;
+            const yOffset = (pdfHeight - imgHeight) / 2;
+
+            const options = { 
+              scale: 2,
+              useCORS: true,      
+              logging: false,
+              backgroundColor: '#ffffff',
+              removeContainer: false
+            };
+
+            if (this.plantillaImprimir) {
+                this.plantillaImprimir.vistaCredencial = 'frente';
+                await new Promise(resolve => setTimeout(resolve, 400));
+                
+                const element = this.printContainer.nativeElement.querySelector('.credencial-frente');
+                const canvasFront = await html2canvas(element, options);
+                const imgDataFront = canvasFront.toDataURL('image/png', 1.0); 
+                
+                pdf.addImage(imgDataFront, 'PNG', xOffset, yOffset, imgWidth, imgHeight, '', 'FAST');
+            }
+
+            if (this.plantillaImprimir) {
+                this.plantillaImprimir.vistaCredencial = 'reverso';
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                const elementReverso = this.printContainer.nativeElement.querySelector('.credencial-reverso');
+                const canvasBack = await html2canvas(elementReverso, options);
+                const imgDataBack = canvasBack.toDataURL('image/png', 1.0);
+                
+                pdf.addPage();
+                pdf.addImage(imgDataBack, 'PNG', xOffset, yOffset, imgWidth, imgHeight, '', 'FAST');
+            }
+
+            pdf.save(`Credencial_${persona.num_empleado}.pdf`);
+            this.utils.MuestrasToast(TipoToast.Success, 'PDF generado correctamente');
+
+            if (persona.id_enrolamiento) {
+              this.enrolamientoService.marcarComoImpreso(persona.id_enrolamiento, persona.fecha_expedicion).subscribe({
+                next: () => {
+                  this.buscarCredenciales();
+                },
+                error: (err) => {
+                  console.error('Error al marcar como impreso:', err);
+                }
+              });
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            this.utils.MuestrasToast(TipoToast.Error, 'Error al generar PDF');
+        } finally {
+            this.empleadoImprimir = null;
+        }
+    }, 800);
+  }
 }

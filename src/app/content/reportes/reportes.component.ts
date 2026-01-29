@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { ChartDataset } from 'chart.js';
-import { MultiChartData } from '../../entidades/chart-datasets.model';
-import { CatalogoService } from '../../../api/catalogo/catalogo.service';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { UtilsService } from '../../services/utils.service';
 import { TipoToast } from '../../../api/entidades/enumeraciones';
+import { EnrolamientoService } from '../../services/enrolamiento.service';
+import { ModalManagerService } from '../../components/shared/modal-manager.service';
 
 @Component({
   selector: 'app-reportes',
@@ -15,36 +14,39 @@ export class ReportesComponent implements OnInit {
   startDate: string = '';
   endDate: string = '';
   
-  totalAsuntos: number = 0;
-  asuntosPorStatus: any[] = [];
-  tiempoPromedioAtencion: any = null;
-  asuntosConcluidos: any[] = [];
-  tiempoPorTema: any[] = [];
-  asuntosPorTema: any[] = [];
-  turnosPorUnidad: any[] = [];
-  listaAsuntosPorUnidad: any[] = [];
-  asuntosConUnidades: any[] = [];
-  asuntosPorUnidadRespTotalTurnados: any[] = [];
-  asuntosPorUnidadRespTotalUnidades: any[] = [];
+  // Estadísticas de credenciales
+  estadisticas: any = null;
+  totalCredenciales: number = 0;
+  credencialesCompletas: number = 0;
+  credencialesImpresas: number = 0;
+  credencialesPendientes: number = 0;
+  credencialesIncompletas: number = 0;
+  credencialesImpresasHoy: number = 0;
   
-  // Datasets para gráficas de Chart.js
-  graficaAsuntosPorTema: MultiChartData = { labels: [], datasets: [] };
-  graficaTurnosPorUnidad: MultiChartData = { labels: [], datasets: [] };
+  porcentajeImpresas: number = 0;
+  porcentajeCompletas: number = 0;
+  porcentajePendientes: number = 0;
   
-  // Datos para tooltips personalizados
-  tooltipAsuntosPorTema: any[] = [];
-  tooltipTurnosPorUnidad: any[] = [];
+  // Detalles para modales
+  detallePendientes: any[] = [];
+  detalleIncompletas: any[] = [];
+  porAdscripcion: any[] = [];
   
   cargando: boolean = false;
   reporteCargado: boolean = false;
 
+  @ViewChild('modalDetalle') modalDetalle!: TemplateRef<any>;
+  tituloModal: string = '';
+  datosModal: any[] = [];
+
   constructor(
-    private catalogoService: CatalogoService,
-    private utils: UtilsService
+    private enrolamientoService: EnrolamientoService,
+    private utils: UtilsService,
+    private modalManager: ModalManagerService
   ) {}
 
   ngOnInit(): void {
-    this.cargarReporte();
+    this.cargarEstadisticas();
   }
 
   applyFilter(): void {
@@ -54,124 +56,68 @@ export class ReportesComponent implements OnInit {
         return;
       }
     }
-    this.cargarReporte();
+    this.cargarEstadisticas();
   }
 
   clearFilter(): void {
     this.startDate = '';
     this.endDate = '';
-    this.cargarReporte();
+    this.cargarEstadisticas();
   }
 
-  cargarReporte(): void {
+  cargarEstadisticas(): void {
     this.cargando = true;
-    const data = {
-      fechaInicio: this.startDate || null,
-      fechaFin: this.endDate || null
-    };
-
-    this.catalogoService.verReporte(data).subscribe({
+    
+    this.enrolamientoService.obtenerEstadisticas(this.startDate, this.endDate).subscribe({
       next: (response: any) => {
-        if (response.status === 200) {
-          this.totalAsuntos = response.model.totalAsuntos[0]?.totalAsuntos || 0;
-          this.asuntosPorStatus = response.model.asuntosPorStatus || [];
-          this.tiempoPromedioAtencion = response.model.tiempoPromedioAtencion[0] || null;
-          this.asuntosConcluidos = response.model.asuntosConcluidos || [];
-          this.tiempoPorTema = response.model.tiempoPorTema || [];
-          this.asuntosPorTema = response.model.asuntosPorTema || [];
-          this.turnosPorUnidad = response.model.turnosPorUnidad || [];
-          this.listaAsuntosPorUnidad = response.model.listaAsuntosPorUnidad || [];
-          this.asuntosConUnidades = response.model.asuntosConUnidades || [];
-          this.asuntosPorUnidadRespTotalTurnados = response.model.asuntosPorUnidadRespTotalTurnados || [];
-          this.asuntosPorUnidadRespTotalUnidades = response.model.asuntosPorUnidadRespTotalUnidades || [];
+        if (response.status === 'success') {
+          this.estadisticas = response;
+          this.totalCredenciales = response.totales.total_credenciales;
+          this.credencialesCompletas = response.totales.credenciales_completas;
+          this.credencialesImpresas = response.totales.credenciales_impresas;
+          this.credencialesPendientes = response.totales.credenciales_pendientes;
+          this.credencialesIncompletas = response.totales.credenciales_incompletas;
+          this.credencialesImpresasHoy = response.hoy.credenciales_impresas_hoy;
           
-          // Preparar datasets para las gráficas de pastel
-          this.prepararGraficaAsuntosPorTema();
-          this.prepararGraficaTurnosPorUnidad();
+          this.porcentajeImpresas = response.porcentajes.porcentaje_impresas;
+          this.porcentajeCompletas = response.porcentajes.porcentaje_completas;
+          this.porcentajePendientes = response.porcentajes.porcentaje_pendientes;
+          
+          this.detallePendientes = response.detalle_pendientes || [];
+          this.detalleIncompletas = response.detalle_incompletas || [];
+          this.porAdscripcion = response.por_adscripcion || [];
           
           this.reporteCargado = true;
         }
         this.cargando = false;
       },
       error: (error) => {
-        console.error('Error al cargar reporte:', error);
-        this.utils.MuestrasToast(TipoToast.Error, 'No se pudo cargar el reporte');
+        console.error('Error al cargar estadísticas:', error);
+        this.utils.MuestrasToast(TipoToast.Error, 'No se pudieron cargar las estadísticas');
         this.cargando = false;
       }
     });
   }
 
-  getStatusColor(idStatus: number): string {
-    const colors: { [key: number]: string } = {
-      1: 'primary',
-      2: 'warning',
-      3: 'success'
-    };
-    return colors[idStatus] || 'secondary';
-  }
+  abrirModalDetalle(tipo: string): void {
+    if (tipo === 'pendientes') {
+      this.tituloModal = 'Credenciales Pendientes de Imprimir';
+      this.datosModal = this.detallePendientes;
+    } else if (tipo === 'incompletas') {
+      this.tituloModal = 'Credenciales Incompletas (sin foto o firma)';
+      this.datosModal = this.detalleIncompletas;
+    }
 
-  // Helper para calcular porcentaje máximo en gráficas
-  getPercentage(value: number, dataset: any[]): number {
-    if (!dataset || dataset.length === 0) return 0;
-    const max = Math.max(...dataset.map((item: any) => 
-      item.totalTurnados || item.totalAsuntosPorTema || item.totalAsuntosAtendidos || 0
-    ));
-    return max > 0 ? (value / max) * 100 : 0;
-  }
+    if (this.datosModal.length === 0) {
+      this.utils.MuestrasToast(TipoToast.Info, 'No hay registros para mostrar');
+      return;
+    }
 
-  // Preparar gráfica de barras horizontales para asuntos por tema
-  prepararGraficaAsuntosPorTema(): void {
-    if (!this.asuntosPorTema || this.asuntosPorTema.length === 0) return;
-
-    const gradientColors = this.asuntosPorTema.map((_, index) => {
-      const colorStart = [139, 40, 40]; // RGB for #8b2828ff
-      const colorEnd = [201, 169, 119]; // RGB for #c3b531ff
-      const factor = index / this.asuntosPorTema.length;
-      const r = Math.round(colorStart[0] + factor * (colorEnd[0] - colorStart[0]));
-      const g = Math.round(colorStart[1] + factor * (colorEnd[1] - colorStart[1]));
-      const b = Math.round(colorStart[2] + factor * (colorEnd[2] - colorStart[2]));
-      return `rgb(${r}, ${g}, ${b})`;
+    this.modalManager.openModal({
+      title: this.tituloModal,
+      template: this.modalDetalle,
+      showFooter: false,
+      width: '400px'
     });
-
-    this.graficaAsuntosPorTema = {
-      labels: this.asuntosPorTema.map(tema => tema.Tema),
-      datasets: [{
-        type: 'bar',
-        label: 'Total de Asuntos',
-        data: this.asuntosPorTema.map(tema => tema.totalAsuntosPorTema),
-        backgroundColor: gradientColors,
-        borderColor: '#ffffffff',
-        borderWidth: 1,
-        barThickness: 25
-      }] as ChartDataset<'bar', number[]>[]
-    } as MultiChartData;
-  }
-
-  // Preparar gráfica de barras horizontales para turnos por unidad
-  prepararGraficaTurnosPorUnidad(): void {
-    if (!this.turnosPorUnidad || this.turnosPorUnidad.length === 0) return;
-
-    const gradientColors = this.turnosPorUnidad.map((_, index) => {
-      const colorStart = [201, 169, 119]; // RGB for #C9A977
-      const colorEnd = [139, 40, 40]; // RGB for #B89867
-      const factor = index / this.turnosPorUnidad.length;
-      const r = Math.round(colorStart[0] + factor * (colorEnd[0] - colorStart[0]));
-      const g = Math.round(colorStart[1] + factor * (colorEnd[1] - colorStart[1]));
-      const b = Math.round(colorStart[2] + factor * (colorEnd[2] - colorStart[2]));
-      return `rgb(${r}, ${g}, ${b})`;
-    });
-
-    this.graficaTurnosPorUnidad = {
-      labels: this.turnosPorUnidad.map(unidad => unidad.area),
-      datasets: [{
-        type: 'bar',
-        label: 'Total de Turnados',
-        data: this.turnosPorUnidad.map(unidad => unidad.totalTurnados),
-        backgroundColor: gradientColors,
-        borderColor: '#ffffffff',
-        borderWidth: 1,
-        barThickness: 30
-      }] as ChartDataset<'bar', number[]>[]
-    } as MultiChartData;
   }
 }

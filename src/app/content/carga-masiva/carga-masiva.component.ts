@@ -36,7 +36,7 @@ export class CargaMasivaComponent implements OnInit {
   @ViewChild('modalConfirmacion') modalConfirmacion!: TemplateRef<any>;
   @ViewChild('modalDuplicados') modalDuplicados!: TemplateRef<any>;
   
-  private apiUrl = 'http://localhost:8080/api/empleados-sig/';
+  private apiUrl = '/api/empleados-sig/';
 
   constructor(
     private http: HttpClient,

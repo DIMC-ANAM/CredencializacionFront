@@ -27,6 +27,7 @@ import { ConsultaEnrolamientoComponent } from './content/enrolamiento/consulta-e
 import { PlantillaEnrolamientoComponent } from './content/enrolamiento/plantilla-enrolamiento/plantilla-enrolamiento.component';
 import { CredencializacionComponent } from './content/credencializacion/credencializacion.component';
 import { CargaMasivaComponent } from './content/carga-masiva/carga-masiva.component';
+import { ProvisionalComponent } from './content/provisional/provisional.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { CargaMasivaComponent } from './content/carga-masiva/carga-masiva.compon
     ConsultaEnrolamientoComponent,
     PlantillaEnrolamientoComponent,
     CredencializacionComponent,
-    CargaMasivaComponent
+    CargaMasivaComponent,
+    ProvisionalComponent
   ],
   imports: [
     DataTablesModule,
